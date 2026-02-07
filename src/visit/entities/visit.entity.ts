@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, DeleteDateColumn } from 'typeorm';
+import { FindOptionsSelect } from 'typeorm';
 import { Family } from '../../family/entities/family.entity';
 import { User } from '../../user/entities/user.entity';
 import { AidDistribution } from '../../aid-distribution/entities/aid-distribution.entity';
@@ -37,4 +38,17 @@ export class Visit {
 
     @OneToMany(() => AidDistribution, (ad) => ad.visit, { cascade: true })
     aidDistributions: AidDistribution[];
+
+    @DeleteDateColumn()
+    deletedAt: Date | null;
 }
+
+export const VisitSelectOptions: FindOptionsSelect<Visit> = {
+    id: true,
+    startDate: true,
+    endDate: true,
+    isActive: true,
+    isCompleted: true,
+    notes: true,
+    deletedAt: true,
+};

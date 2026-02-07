@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BeforeInsert } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, DeleteDateColumn } from 'typeorm';
+import { FindOptionsSelect } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Visit } from '../../visit/entities/visit.entity';
 
@@ -42,6 +43,20 @@ export class User {
     @OneToMany(() => Visit, (visit) => visit.user)
     visits: Visit[];
 
+    @CreateDateColumn()
+    createdAt: Date;
 
-
+    @DeleteDateColumn()
+    deletedAt: Date | null;
 }
+
+
+export const UserSelectOptions: FindOptionsSelect<User> = {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    phone: true,
+    createdAt: true,
+    deletedAt: true,
+};

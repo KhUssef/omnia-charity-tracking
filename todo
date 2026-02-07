@@ -1,2 +1,4 @@
 - [ ] add notes about family
 - [ ] add region to compaign 
+- [ ] before adding a user to campaign make sure he is not part of any other campaign during that time
+- [ ] make userSelect/ campaignSelect dto ...

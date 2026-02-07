@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, CreateDateColumn, DeleteDateColumn } from 'typeorm';
+import { FindOptionsSelect } from 'typeorm';
 import { Visit } from '../../visit/entities/visit.entity';
 import { Location } from '../../location/entities/location.entity';
 
@@ -42,4 +43,23 @@ export class Family {
     @Column({ type: 'text', nullable: true })
     notes: string;
 
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @DeleteDateColumn()
+    deletedAt: Date | null;
+
 }
+
+export const FamilySelectOptions: FindOptionsSelect<Family> = {
+    id: true,
+    lastName: true,
+    phone: true,
+    address: true,
+    numberOfMembers: true,
+    containsDisabledMember: true,
+    containsElderlyMember: true,
+    containspupilMember: true,
+    createdAt: true,
+    deletedAt: true,
+};

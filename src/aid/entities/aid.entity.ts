@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, DeleteDateColumn } from 'typeorm';
+import { FindOptionsSelect } from 'typeorm';
 import { AidDistribution } from '../../aid-distribution/entities/aid-distribution.entity';
 
 
@@ -31,4 +32,19 @@ export class Aid {
 
     @OneToMany(() => AidDistribution, (ad) => ad.aid)
     distributions: AidDistribution[];
+ 
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @DeleteDateColumn()
+    deletedAt: Date | null;
 }
+
+export const AidSelectOptions: FindOptionsSelect<Aid> = {
+    id: true,
+    name: true,
+    type: true,
+    description: true,
+    createdAt: true,
+    deletedAt: true,
+};

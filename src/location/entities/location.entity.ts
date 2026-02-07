@@ -1,5 +1,5 @@
-
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, CreateDateColumn, DeleteDateColumn } from 'typeorm';
+import { FindOptionsSelect } from 'typeorm';
 import { Family } from '../../family/entities/family.entity';
 
 
@@ -32,4 +32,21 @@ export class Location {
     @OneToOne(() => Family, (family) => family.location)
     @JoinColumn()
     family: Family;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @DeleteDateColumn()
+    deletedAt: Date | null;
 }
+
+export const LocationSelectOptions: FindOptionsSelect<Location> = {
+    id: true,
+    latitude: true,
+    longitude: true,
+    city: true,
+    region: true,
+    description: true,
+    createdAt: true,
+    deletedAt: true,
+};
