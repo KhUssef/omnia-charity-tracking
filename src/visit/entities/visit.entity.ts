@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, DeleteDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, DeleteDateColumn, ManyToMany, JoinTable } from 'typeorm';
 import { FindOptionsSelect } from 'typeorm';
 import { Family } from '../../family/entities/family.entity';
 import { User } from '../../user/entities/user.entity';
@@ -11,11 +11,25 @@ export class Visit {
     id: string;
 
 
-    @CreateDateColumn()
+    @Column({ type: 'datetime' })
     startDate: Date;
 
-    @CreateDateColumn()
+    @Column({ type: 'datetime', nullable: true })
     endDate: Date;
+
+    @Column('double precision', { nullable: true })
+    latitude: number | null;
+
+    @Column('double precision', { nullable: true })
+    longitude: number | null;
+
+    @Column({ nullable: true })
+    region: string;
+
+    @Column({ nullable: true })
+    city: string;
+
+
 
     @Column({ default: false })
     isActive: boolean;
@@ -27,13 +41,15 @@ export class Visit {
     @Column({ type: 'text', nullable: true })
     notes: string;
 
+    
+    @ManyToMany(() => Family, (family) => family.visits)
+    @JoinTable()
+    families: Family[];
 
-    @ManyToOne(() => Family, (family) => family.visits)
-    family: Family;
 
-
-    @ManyToOne(() => User, (user) => user.visits)
-    user: User;
+    @ManyToMany(() => User, (user) => user.visits)
+    @JoinTable()
+    users: User[];
 
 
     @OneToMany(() => AidDistribution, (ad) => ad.visit, { cascade: true })
@@ -47,8 +63,16 @@ export const VisitSelectOptions: FindOptionsSelect<Visit> = {
     id: true,
     startDate: true,
     endDate: true,
+    latitude: true,
+    longitude: true,
+    city: true,
+    region: true,
     isActive: true,
     isCompleted: true,
     notes: true,
-    deletedAt: true,
+    users:{
+        id: true,
+        name: true,
+        email: true,
+    }
 };

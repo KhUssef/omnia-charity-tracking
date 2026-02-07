@@ -43,15 +43,15 @@ export class AidDistributionService {
 
     const ad = this.adRepo.create({
       visit,
-        // fast UI: allow unit/notes to be null
+		// fast UI: allow unit/notes to be null
       quantity,
       unit: dto.unit ?? null,
       notes: dto.notes ?? null,
-        // aid relation
-        // note: aid is required
-        // if future UI allows "quick add" aids, we can relax this
+		// aid relation
+		// note: aid is required
+		// if future UI allows "quick add" aids, we can relax this
       aid,
-    });
+    } as Partial<AidDistribution>);
 
     const saved = await this.adRepo.save(ad);
     return this.adRepo.findOne({

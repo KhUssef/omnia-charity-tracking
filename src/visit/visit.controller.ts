@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { VisitService } from './visit.service';
 import { CreateVisitDto } from './dto/create-visit.dto';
 import { UpdateVisitDto } from './dto/update-visit.dto';
@@ -17,18 +17,28 @@ export class VisitController {
     return this.visitService.findAll();
   }
 
+  @Get('active')
+  findActive() {
+    return this.visitService.findActive();
+  }
+
+  @Get('previous/:limit')
+  findPrevious(@Param('limit', ParseIntPipe) limit: number) {
+    return this.visitService.findPrevious(limit);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.visitService.findOne(+id);
+	return this.visitService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateVisitDto: UpdateVisitDto) {
-    return this.visitService.update(+id, updateVisitDto);
+	return this.visitService.update(id, updateVisitDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.visitService.remove(+id);
+	return this.visitService.remove(id);
   }
 }

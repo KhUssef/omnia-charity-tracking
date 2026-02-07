@@ -17,10 +17,14 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "create:admin": "ts-node -r tsconfig-paths/register src/scripts/create-admin.ts",
+    "create:test-users": "ts-node -r tsconfig-paths/register src/scripts/create-test-users.ts",
+    "sync:visits": "ts-node -r tsconfig-paths/register src/scripts/sync-active-visits.ts"
   },
   "dependencies": {
     "@faker-js/faker": "^10.3.0",
+    "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
@@ -31,6 +35,8 @@
     "@nestjs/schedule": "^6.1.1",
     "@nestjs/typeorm": "^11.0.0",
     "bcrypt": "^6.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
     "mysql2": "^3.16.3",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",

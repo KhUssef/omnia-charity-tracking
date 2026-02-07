@@ -43,17 +43,22 @@ export class UserService {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
-    const visit = await this.visitRepo.findOne({ where: { id: visitId }, relations: ['user'] });
+    const visit = await this.visitRepo.findOne({ where: { id: visitId }, relations: ['users'] });
     if (!visit) throw new NotFoundException('Visit not found');
 
     // clear other active visits for this user
-    const otherActive = await this.visitRepo.find({ where: { user: { id: user.id }, isActive: true } });
+    const otherActive = await this.visitRepo.find({ where: { isActive: true, users: { id: user.id } } });
     for (const other of otherActive) {
       other.isActive = false;
       await this.visitRepo.save(other);
     }
 
-    visit.user = user;
+    if (!visit.users) {
+      (visit as any).users = [];
+    }
+    if (!visit.users.find((u) => u.id === user.id)) {
+      visit.users.push(user);
+    }
     visit.isActive = true;
     visit.isCompleted = false;
     await this.visitRepo.save(visit);

@@ -1,4 +1,5 @@
-import { IsBoolean, IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateFamilyDto {
 	@IsString()
@@ -30,6 +31,16 @@ export class CreateFamilyDto {
 	@IsOptional()
 	@IsBoolean()
 	containspupilMember?: boolean;
+
+	@IsOptional()
+	@Type(() => Number)
+	@IsNumber()
+	latitude?: number;
+
+	@IsOptional()
+	@Type(() => Number)
+	@IsNumber()
+	longitude?: number;
 
 	@IsOptional()
 	@IsString()

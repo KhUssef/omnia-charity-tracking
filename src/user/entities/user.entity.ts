@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, DeleteDateColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, DeleteDateColumn, ManyToOne, ManyToMany } from 'typeorm';
 import { FindOptionsSelect } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Visit } from '../../visit/entities/visit.entity';
@@ -40,7 +40,7 @@ export class User {
     phone: string;
 
 
-    @OneToMany(() => Visit, (visit) => visit.user)
+    @ManyToMany(() => Visit, (visit) => visit.users)
     visits: Visit[];
 
 	@Column({ default: false })

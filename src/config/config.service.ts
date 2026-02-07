@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService as NestConfigService } from '@nestjs/config';
-import { Config, DatabaseConfig } from './config.interface';
+import { Config, DatabaseConfig, GoogleMapsConfig } from './config.interface';
 
 @Injectable()
 export class ConfigService {
@@ -30,6 +30,14 @@ export class ConfigService {
       jwtExpiration: this.configService.get<string>('JWT_EXPIRATION') || '1h',
       jwtRefreshSecret: this.configService.get<string>('JWT_REFRESH_SECRET') || 'yourrefreshsecretkey',
       jwtRefreshExpiration: this.configService.get<string>('JWT_REFRESH_EXPIRATION') || '7d',
+    };
+  }
+
+  getGoogleMapsConfig(): GoogleMapsConfig {
+    return {
+      geocodeBaseUrl:
+        this.configService.get<string>('GOOGLE_MAPS_GEOCODE_URL') ||
+        'https://nominatim.openstreetmap.org/reverse',
     };
   }
 }

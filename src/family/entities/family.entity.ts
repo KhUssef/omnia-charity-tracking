@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, CreateDateColumn, DeleteDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, CreateDateColumn, DeleteDateColumn, ManyToMany } from 'typeorm';
 import { FindOptionsSelect } from 'typeorm';
 import { Visit } from '../../visit/entities/visit.entity';
 import { Location } from '../../location/entities/location.entity';
@@ -18,15 +18,13 @@ export class Family {
     @OneToOne(() => Location, (location) => location.family)
     location: Location;
 
-    @Column()
+    @Column({nullable: true})
     address: string;
 
 
     @Column({ default: 1 })
     numberOfMembers: number;
-
-
-    @OneToMany(() => Visit, (visit) => visit.family)
+    @ManyToMany(() => Visit, (visit) => visit.families)
     visits: Visit[];
 
     @Column({default: false})

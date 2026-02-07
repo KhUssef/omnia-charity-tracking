@@ -4,17 +4,39 @@ import { Like, Repository } from 'typeorm';
 import { CreateFamilyDto } from './dto/create-family.dto';
 import { UpdateFamilyDto } from './dto/update-family.dto';
 import { Family, FamilySelectOptions, FamilySearchSelectOptions } from './entities/family.entity';
+import { Location } from '../location/entities/location.entity';
+import { LocationService } from '../location/location.service';
 
 @Injectable()
 export class FamilyService {
   constructor(
     @InjectRepository(Family)
     private readonly familyRepo: Repository<Family>,
+    @InjectRepository(Location)
+    private readonly locationRepo: Repository<Location>,
+    private readonly locationService: LocationService,
   ) {}
 
   async create(createFamilyDto: CreateFamilyDto) {
-    const family = this.familyRepo.create(createFamilyDto);
+    const { latitude, longitude, ...familyData } = createFamilyDto;
+
+    const family = this.familyRepo.create(familyData);
     const saved = await this.familyRepo.save(family);
+
+    if (typeof latitude === 'number' && typeof longitude === 'number') {
+      const { city, region } = await this.locationService.getRegionFromCoordinates(latitude, longitude);
+
+      const location = this.locationRepo.create({
+        latitude,
+        longitude,
+        city,
+        region,
+        family: saved,
+      } as Partial<Location>);
+
+      await this.locationRepo.save(location);
+    }
+
     return this.familyRepo.findOne({
       where: { id: saved.id },
       select: FamilySelectOptions,

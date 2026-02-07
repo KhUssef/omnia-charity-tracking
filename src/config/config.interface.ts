@@ -30,3 +30,7 @@ export interface AppConfig {
   port: number;
   environment: string;
 }
+
+export interface GoogleMapsConfig {
+  geocodeBaseUrl: string;
+}

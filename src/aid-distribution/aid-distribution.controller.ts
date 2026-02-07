@@ -16,6 +16,7 @@ export class AidDistributionController {
 
   // Create a distribution for the current user's active visit
   @Post()
+  @Roles([UserRole.EMPLOYEE])
   createForCurrentVisit(
     @ConnectedUser() user: JwtPayload,
     @Body() createAidDistributionDto: CreateAidDistributionDto,
@@ -25,31 +26,35 @@ export class AidDistributionController {
 
   // List distributions for the current user's active visit
   @Get('me/current-visit')
+  @Roles([UserRole.EMPLOYEE])
   findForCurrentVisit(@ConnectedUser() user: JwtPayload) {
     return this.aidDistributionService.findForCurrentVisit(user.sub);
   }
 
   // Admin: list distributions for a specific visit
   @Get('by-visit/:visitId')
-  @Roles(UserRole.ADMIN)
+  @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])
   findByVisit(@Param('visitId') visitId: string) {
     return this.aidDistributionService.findByVisit(visitId);
   }
 
   // View a single distribution
   @Get(':id')
+  @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])
   findOne(@Param('id') id: string) {
     return this.aidDistributionService.findOne(id);
   }
 
   // Update a distribution
   @Patch(':id')
+  @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])
   update(@Param('id') id: string, @Body() updateAidDistributionDto: UpdateAidDistributionDto) {
     return this.aidDistributionService.update(id, updateAidDistributionDto);
   }
 
   // Soft delete
   @Delete(':id')
+  @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])
   remove(@Param('id') id: string) {
     return this.aidDistributionService.softDelete(id);
   }
