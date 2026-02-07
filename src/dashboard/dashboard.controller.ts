@@ -46,6 +46,11 @@ export class DashboardController {
     return this.service.aidCityHeatmap();
   }
 
+  @Get('cities/active/count')
+  getActiveCitiesCount() {
+    return this.service.activeCitiesCount();
+  }
+
   // Time
   @Get('time/families')
   getFamiliesOverTime(@Query('months') months?: string) {
@@ -83,6 +88,11 @@ export class DashboardController {
     return this.service.aidFrequency();
   }
 
+  @Get('aids/financial/total-distributed')
+  getTotalFinancialAidDistributed() {
+    return this.service.totalFinancialAidDistributed();
+  }
+
   @Get('aids/type-breakdown')
   getAidTypeBreakdown(@Query('region') region?: string, @Query('limit') limit?: string) {
     const parsed = limit ? Number.parseInt(limit, 10) : undefined;
@@ -96,6 +106,11 @@ export class DashboardController {
   }
 
   // Families
+  @Get('families/count')
+  getFamiliesCount() {
+    return this.service.totalFamiliesCount();
+  }
+
   @Get('families/histogram')
   getFamilyHistogram(@Query('months') months?: string) {
     const value = months ? Number.parseInt(months, 10) : undefined;
@@ -113,6 +128,11 @@ export class DashboardController {
   }
 
   // Visits
+  @Get('visits/count')
+  getVisitsCount() {
+    return this.service.totalVisitsCount();
+  }
+
   @Get('visits/timeline')
   getVisitTimeline(@Query('months') months?: string) {
     const parsed = months ? Number.parseInt(months, 10) : undefined;

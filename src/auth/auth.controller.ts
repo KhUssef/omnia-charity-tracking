@@ -18,7 +18,9 @@ export class AuthController {
 
   @Post('login')
   login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+    const idk = this.authService.login(dto);
+    console.log('Login attempt:', idk);
+    return idk;
   }
 
 	@Post('refresh')

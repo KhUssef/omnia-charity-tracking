@@ -8,6 +8,7 @@ export class AidController {
   constructor(private readonly aidService: AidService) {}
 
   @Post()
+  
   create(@Body() createAidDto: CreateAidDto) {
     return this.aidService.create(createAidDto);
   }

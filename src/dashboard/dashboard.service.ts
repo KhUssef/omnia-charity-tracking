@@ -352,6 +352,38 @@ export class DashboardService {
     }));
   }
 
+  async totalVisitsCount() {
+    const totalVisits = await this.visitRepo.count();
+    return { totalVisits };
+  }
+
+  async totalFamiliesCount() {
+    const totalFamilies = await this.familyRepo.count();
+    return { totalFamilies };
+  }
+
+  async activeCitiesCount() {
+    const row = await this.visitRepo
+      .createQueryBuilder('visit')
+      .select("COUNT(DISTINCT visit.city)", 'cityCount')
+      .where('visit.isActive = true')
+      .andWhere('visit.city IS NOT NULL')
+      .getRawOne();
+
+    return { activeCities: Number(row?.cityCount) || 0 };
+  }
+
+  async totalFinancialAidDistributed() {
+    const row = await this.aidDistributionRepo
+      .createQueryBuilder('distribution')
+      .innerJoin('distribution.aid', 'aid')
+      .select('SUM(distribution.quantity)', 'totalDistributed')
+      .where('aid.type = :aidType', { aidType: AidType.FINANCIAL })
+      .getRawOne();
+
+    return { totalFinancialAidDistributed: Number(row?.totalDistributed) || 0 };
+  }
+
   async riskMap() {
     const rows = await this.familyRepo
       .createQueryBuilder('family')

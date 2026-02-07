@@ -22,7 +22,6 @@ export class Family {
     @Column({nullable: true})
     address: string;
 
-
     @Column({ default: 1 })
     numberOfMembers: number;
     @ManyToMany(() => Visit, (visit) => visit.families)
