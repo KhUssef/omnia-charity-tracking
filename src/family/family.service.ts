@@ -65,8 +65,44 @@ export class FamilyService {
     if (!family) {
       throw new NotFoundException('Family not found');
     }
-    Object.assign(family, updateFamilyDto);
+    const { latitude, longitude, ...rest } = updateFamilyDto;
+
+    Object.assign(family, rest);
     await this.familyRepo.save(family);
+
+    if (typeof latitude === 'number' && typeof longitude === 'number') {
+      const { city, region } = await this.locationService.getRegionFromCoordinates(
+        latitude,
+        longitude,
+      );
+
+      let location = await this.locationRepo.findOne({
+        where: { family: { id: family.id } },
+        relations: ['family'],
+      });
+
+      if (!location) {
+        location = this.locationRepo.create({
+          latitude,
+          longitude,
+          city: city ?? undefined,
+          region: region ?? undefined,
+          family,
+        } as Partial<Location>);
+      } else {
+        location.latitude = latitude;
+        location.longitude = longitude;
+        if (city) {
+          location.city = city;
+        }
+        if (region) {
+          location.region = region;
+        }
+      }
+
+      await this.locationRepo.save(location);
+    }
+
     return this.findOne(id);
   }
 

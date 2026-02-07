@@ -11,7 +11,7 @@ import { User, UserRole } from 'src/user/entities/user.entity';
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class FamilyController {
   constructor(private readonly familyService: FamilyService) { }
-  // @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])
+  @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])
   @Post()
   create(@Body() createFamilyDto: CreateFamilyDto) {
     return this.familyService.create(createFamilyDto);
