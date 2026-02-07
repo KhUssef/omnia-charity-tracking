@@ -3,6 +3,7 @@ import { FindOptionsSelect } from 'typeorm';
 import { Family } from '../../family/entities/family.entity';
 import { User } from '../../user/entities/user.entity';
 import { AidDistribution } from '../../aid-distribution/entities/aid-distribution.entity';
+import { VisitAidStat } from '../../dashboard/entities/visit-aid-stat.entity';
 
 
 @Entity()
@@ -55,6 +56,12 @@ export class Visit {
     @OneToMany(() => AidDistribution, (ad) => ad.visit, { cascade: true })
     aidDistributions: AidDistribution[];
 
+    @OneToMany(() => VisitAidStat, (stat) => stat.visit, { cascade: true })
+    aidStats: VisitAidStat[];
+
+    @Column({ default: false })
+    statsComputed: boolean;
+
     @DeleteDateColumn()
     deletedAt: Date | null;
 }
@@ -69,6 +76,7 @@ export const VisitSelectOptions: FindOptionsSelect<Visit> = {
     region: true,
     isActive: true,
     isCompleted: true,
+    statsComputed: true,
     notes: true,
     users:{
         id: true,

@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, DeleteDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, DeleteDateColumn, JoinColumn } from 'typeorm';
 import { FindOptionsSelect } from 'typeorm';
 import { Visit } from '../../visit/entities/visit.entity';
 import { Aid } from '../../aid/entities/aid.entity';
+import { Deposit } from '../../deposit/entities/deposit.entity';
 @Entity()
 export class AidDistribution {
     @PrimaryGeneratedColumn('uuid')
@@ -27,6 +28,10 @@ export class AidDistribution {
     @ManyToOne(() => Aid, (aid) => aid.distributions)
     aid: Aid;
 
+    @ManyToOne(() => Deposit, (deposit) => deposit.distributions, { nullable: true })
+    @JoinColumn({ name: 'sourceDepositId' })
+    sourceDeposit: Deposit | null;
+
     @CreateDateColumn()
     createdAt: Date;
 
@@ -41,4 +46,10 @@ export const AidDistributionSelectOptions: FindOptionsSelect<AidDistribution> = 
     notes: true,
     createdAt: true,
     deletedAt: true,
+    sourceDeposit: {
+        id: true,
+        name: true,
+        city: true,
+        region: true,
+    }
 };

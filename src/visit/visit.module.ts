@@ -7,9 +7,10 @@ import { User } from '../user/entities/user.entity';
 import { Family } from '../family/entities/family.entity';
 import { LocationModule } from '../location/location.module';
 import { VisitTasksService } from './visit-tasks.service';
+import { DashboardModule } from '../dashboard/dashboard.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Visit, User, Family]), LocationModule],
+  imports: [TypeOrmModule.forFeature([Visit, User, Family]), LocationModule, DashboardModule],
   controllers: [VisitController],
   providers: [VisitService, VisitTasksService],
 })

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { AidService } from './aid.service';
 import { CreateAidDto } from './dto/create-aid.dto';
 import { UpdateAidDto } from './dto/update-aid.dto';
@@ -13,22 +13,22 @@ export class AidController {
   }
 
   @Get()
-  findAll() {
-    return this.aidService.findAll();
+  findAll(@Query('search') search?: string) {
+    return this.aidService.findAll(search);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.aidService.findOne(+id);
+    return this.aidService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateAidDto: UpdateAidDto) {
-    return this.aidService.update(+id, updateAidDto);
+    return this.aidService.update(id, updateAidDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.aidService.remove(+id);
+    return this.aidService.remove(id);
   }
 }

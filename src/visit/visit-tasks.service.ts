@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Visit } from './entities/visit.entity';
 import { User } from '../user/entities/user.entity';
+import { StatsService } from '../dashboard/stats.service';
 
 @Injectable()
 export class VisitTasksService {
@@ -12,6 +13,7 @@ export class VisitTasksService {
     private readonly visitRepo: Repository<Visit>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    private readonly statsService: StatsService,
   ) {}
 
   // Runs every day at midnight server time
@@ -38,7 +40,9 @@ export class VisitTasksService {
       if (shouldDeactivate) {
         visit.isActive = false;
         visit.isCompleted = true;
+        visit.statsComputed = false;
         await this.visitRepo.save(visit);
+        await this.statsService.ensureVisitStats(visit.id);
 
         for (const user of visit.users ?? []) {
           if (user.currentVisit && user.currentVisit.id === visit.id) {
@@ -82,6 +86,10 @@ export class VisitTasksService {
         await this.visitRepo.save(visit);
 
         await this.userRepo.update(user.id, { currentVisit: visit });
+
+        if (visit.isCompleted) {
+          await this.statsService.ensureVisitStats(visit.id);
+        }
       }
     }
   }

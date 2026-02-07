@@ -7,6 +7,7 @@ import { Visit, VisitSelectOptions } from './entities/visit.entity';
 import { Family } from '../family/entities/family.entity';
 import { LocationService } from '../location/location.service';
 import { User } from '../user/entities/user.entity';
+import { StatsService } from '../dashboard/stats.service';
 
 @Injectable()
 export class VisitService {
@@ -18,6 +19,7 @@ export class VisitService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     private readonly locationService: LocationService,
+    private readonly statsService: StatsService,
   ) {}
 
   async create(createVisitDto: CreateVisitDto) {
@@ -103,9 +105,14 @@ export class VisitService {
       throw new NotFoundException('Visit not found');
     }
 
-    const { latitude, longitude, startDate, endDate, ...rest } = updateVisitDto as any;
+    const { latitude, longitude, startDate, endDate, isCompleted, ...rest } = updateVisitDto as any;
 
     Object.assign(visit, rest);
+
+    if (isCompleted !== undefined) {
+      visit.isCompleted = isCompleted;
+      visit.statsComputed = false;
+    }
 
     // Normalize dates to date-only if provided
     if (startDate) {
@@ -142,6 +149,11 @@ export class VisitService {
     }
 
     await this.visitRepo.save(visit);
+
+    if (visit.isCompleted) {
+      await this.statsService.ensureVisitStats(visit.id);
+    }
+
     return this.findOne(id);
   }
 

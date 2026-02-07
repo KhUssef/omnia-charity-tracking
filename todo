@@ -1,9 +1,11 @@
 - [x] add notes about family
 - [ ] add region to visit 
 - [ ] before adding a user to campaign make sure he is not part of any other campaign during that time
-- [ ] make userSelect/ campaignSelect dto ..
+- [x] make userSelect/ campaignSelect dto ..
 
+-[ ] make alternative to familiesOverTime that uses vlnerability score
 - [?] make endpoints for admin to create employees
 
 
 - [ ] forgot password
+

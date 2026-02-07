@@ -16,8 +16,14 @@ import { Aid } from './aid/entities/aid.entity';
 import { AidDistribution } from './aid-distribution/entities/aid-distribution.entity';
 import { Family } from './family/entities/family.entity';
 import { Visit } from './visit/entities/visit.entity';
+import { VisitAidStat } from './dashboard/entities/visit-aid-stat.entity';
 import { Location } from './location/entities/location.entity';
+import { CityBoundary } from './location/entities/city-boundary.entity';
 import { ScheduleModule } from '@nestjs/schedule';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { Deposit } from './deposit/entities/deposit.entity';
+import { DepositModule } from './deposit/deposit.module';
+import { DepositStorageStat } from './dashboard/entities/deposit-storage-stat.entity';
 @Module({
   imports: [ConfigModule,
     TypeOrmModule.forRootAsync({
@@ -32,11 +38,11 @@ import { ScheduleModule } from '@nestjs/schedule';
           username: dbConfig.username,
           password: dbConfig.password,
           database: dbConfig.database,
-          entities: [User, Aid, AidDistribution, Family, Visit, Location],
+          entities: [User, Aid, AidDistribution, Family, Visit, Location, VisitAidStat, CityBoundary, Deposit, DepositStorageStat],
           synchronize: true,
         };
       },
-    }),AuthModule, FamilyModule, UserModule, VisitModule, LocationModule, AidModule, AidDistributionModule, ScheduleModule.forRoot()],
+    }),AuthModule, FamilyModule, UserModule, VisitModule, LocationModule, AidModule, AidDistributionModule, DashboardModule, DepositModule, ScheduleModule.forRoot()],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, CreateDateColumn, DeleteDateColumn, ManyToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, CreateDateColumn, DeleteDateColumn, ManyToMany, BeforeInsert, BeforeUpdate } from 'typeorm';
 import { FindOptionsSelect } from 'typeorm';
 import { Visit } from '../../visit/entities/visit.entity';
 import { Location } from '../../location/entities/location.entity';
+import { computeVulnerabilityScore } from '../../common/vulnerability-score';
 
 @Entity()
 export class Family {
@@ -41,11 +42,25 @@ export class Family {
     @Column({ type: 'text', nullable: true })
     notes: string;
 
+    @Column({ type: 'int', default: 0 })
+    vulnerabilityScore: number;
+
     @CreateDateColumn()
     createdAt: Date;
 
     @DeleteDateColumn()
     deletedAt: Date | null;
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    updateVulnerabilityScore() {
+        this.vulnerabilityScore = computeVulnerabilityScore({
+            numberOfMembers: this.numberOfMembers,
+            containsDisabledMember: this.containsDisabledMember,
+            containsElderlyMember: this.containsElderlyMember,
+            containspupilMember: this.containspupilMember,
+        });
+    }
 
 }
 
@@ -58,6 +73,7 @@ export const FamilySelectOptions: FindOptionsSelect<Family> = {
     containsDisabledMember: true,
     containsElderlyMember: true,
     containspupilMember: true,
+    vulnerabilityScore: true,
     createdAt: true,
     deletedAt: true,
 };
