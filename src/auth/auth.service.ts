@@ -46,6 +46,27 @@ export class AuthService {
 		return this.jwtService.sign(payload, options);
 	}
 
+	private async signRefreshToken(payload: JwtPayload): Promise<string> {
+		const options: JwtSignOptions = {
+			secret: this.refreshSecret,
+			expiresIn: this.refreshExpiresIn as JwtSignOptions['expiresIn'],
+		};
+		return this.jwtService.sign(payload, options);
+	}
+
+	private async buildTokens(user: User) {
+		const payload: JwtPayload = {
+			username: user.email,
+			sub: user.id,
+			role: user.role,
+		};
+
+		const accessToken = await this.signToken(payload);
+		const refreshToken = await this.signRefreshToken(payload);
+
+		return { accessToken, refreshToken };
+	}
+
 	async register(dto: RegisterDto) {
     const existing = await this.userRepository.findOne({ where: { email: dto.email } });
 		if (existing) {
@@ -64,17 +85,11 @@ export class AuthService {
 		});
 
 		const savedUser = await this.userRepository.save(user);
-
-		const payload: JwtPayload = {
-			username: savedUser.email,
-			sub: savedUser.id as unknown as number,
-			role: savedUser.role,
-		};
-
-		const accessToken = await this.signToken(payload);
+		const { accessToken, refreshToken } = await this.buildTokens(savedUser);
 
 		return {
 			accessToken,
+			refreshToken,
 			user: {
 				id: savedUser.id,
 				name: savedUser.name,
@@ -100,17 +115,11 @@ export class AuthService {
 
 	async login(dto: LoginDto) {
 		const user = await this.validateUser(dto.email, dto.password);
-
-		const payload: JwtPayload = {
-			username: user.email,
-			sub: user.id as unknown as number,
-			role: user.role,
-		};
-
-		const accessToken = await this.signToken(payload);
+		const { accessToken, refreshToken } = await this.buildTokens(user);
 
 		return {
 			accessToken,
+			refreshToken,
 			user: {
 				id: user.id,
 				name: user.name,
@@ -118,5 +127,29 @@ export class AuthService {
 				role: user.role,
 			},
 		};
+	}
+
+  logout() {
+    // Since we're using JWTs, we can't truly "log out" on the server side without implementing token blacklisting.
+    // For now, the client should simply discard the access and refresh tokens to "log out".
+    return { message: 'Logged out successfully' };
+  }
+
+	async refresh(refreshToken: string) {
+		try {
+			const payload = await this.jwtService.verifyAsync<JwtPayload>(refreshToken, {
+				secret: this.refreshSecret,
+			});
+
+			const user = await this.userRepository.findOne({ where: { id: payload.sub } });
+			if (!user) {
+				throw new UnauthorizedException('User no longer exists');
+			}
+
+			const tokens = await this.buildTokens(user);
+			return tokens;
+		} catch (err) {
+			throw new UnauthorizedException('Invalid or expired refresh token');
+		}
 	}
 }

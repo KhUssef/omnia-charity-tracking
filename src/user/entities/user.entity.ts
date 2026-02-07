@@ -43,6 +43,10 @@ export class User {
     @OneToMany(() => Visit, (visit) => visit.user)
     visits: Visit[];
 
+	// Denormalized pointer to the user's current active visit (if any)
+	@Column({ type: 'uuid', nullable: true })
+	currentVisitId: string | null;
+
     @CreateDateColumn()
     createdAt: Date;
 
@@ -57,6 +61,7 @@ export const UserSelectOptions: FindOptionsSelect<User> = {
     email: true,
     role: true,
     phone: true,
+    currentVisitId: true,
     createdAt: true,
     deletedAt: true,
 };

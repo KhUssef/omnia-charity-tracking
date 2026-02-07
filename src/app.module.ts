@@ -17,7 +17,7 @@ import { AidDistribution } from './aid-distribution/entities/aid-distribution.en
 import { Family } from './family/entities/family.entity';
 import { Visit } from './visit/entities/visit.entity';
 import { Location } from './location/entities/location.entity';
-
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [ConfigModule,
     TypeOrmModule.forRootAsync({
@@ -36,7 +36,7 @@ import { Location } from './location/entities/location.entity';
           synchronize: true,
         };
       },
-    }),AuthModule, FamilyModule, UserModule, VisitModule, LocationModule, AidModule, AidDistributionModule],
+    }),AuthModule, FamilyModule, UserModule, VisitModule, LocationModule, AidModule, AidDistributionModule, ScheduleModule.forRoot()],
   controllers: [AppController],
   providers: [AppService],
 })
