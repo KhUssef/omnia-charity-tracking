@@ -359,6 +359,7 @@ export class DashboardService {
 
   async totalFamiliesCount() {
     const totalFamilies = await this.familyRepo.count();
+    console.log('Total families count:', totalFamilies);
     return { totalFamilies };
   }
 

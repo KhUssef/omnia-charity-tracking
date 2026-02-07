@@ -22,7 +22,8 @@
     "create:test-users": "ts-node -r tsconfig-paths/register src/scripts/create-test-users.ts",
     "sync:visits": "ts-node -r tsconfig-paths/register src/scripts/sync-active-visits.ts",
     "seed:fake-data": "ts-node -r tsconfig-paths/register src/scripts/seed-fake-data.ts",
-    "simulate:timeline": "ts-node -r tsconfig-paths/register src/scripts/simulate-visit-timeline.ts"
+    "simulate:timeline": "ts-node -r tsconfig-paths/register src/scripts/simulate-visit-timeline.ts",
+    "start:full": "npm run seed:fake-data && npm run simulate:timeline && npm run sync:visits && npm run start:dev"
   },
   "dependencies": {
     "@faker-js/faker": "^10.3.0",

@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { Visit } from '../visit/entities/visit.entity';
 import { AidDistribution } from '../aid-distribution/entities/aid-distribution.entity';
 import { Aid } from '../aid/entities/aid.entity';
+import { AidType } from '../aid/aid.types';
 import { Family } from '../family/entities/family.entity';
 import { User, UserRole } from '../user/entities/user.entity';
 import { DashboardCronService } from '../dashboard/dashboard-cron.service';
@@ -19,15 +20,17 @@ interface SimulationConfig {
   maxDistributions: number;
   fakerSeed?: number;
   baseDate: Date;
+  minAidCatalog: number;
 }
 
 const simulationConfig: SimulationConfig = {
   totalVisits: readNumericEnv('SIM_VISITS', 8),
   daysBetweenVisits: readNumericEnv('SIM_DAYS_BETWEEN', 10),
-  minDistributions: readNumericEnv('SIM_MIN_DISTRIBUTIONS', 5),
-  maxDistributions: readNumericEnv('SIM_MAX_DISTRIBUTIONS', 12),
+  minDistributions: readNumericEnv('SIM_MIN_DISTRIBUTIONS', 8),
+  maxDistributions: readNumericEnv('SIM_MAX_DISTRIBUTIONS', 18),
   fakerSeed: process.env.SIM_RANDOM_SEED ? Number(process.env.SIM_RANDOM_SEED) : undefined,
   baseDate: process.env.SIM_BASE_DATE ? new Date(process.env.SIM_BASE_DATE) : subtractMonths(new Date(), 6),
+  minAidCatalog: readNumericEnv('SIM_MIN_AIDS', 18),
 };
 
 if (Number.isFinite(simulationConfig.fakerSeed)) {
@@ -35,7 +38,18 @@ if (Number.isFinite(simulationConfig.fakerSeed)) {
   console.log(`Using faker random seed: ${simulationConfig.fakerSeed}`);
 }
 
-const unitOptions = ['kg', 'liters', 'boxes', 'kits', 'packs', 'vouchers', 'blankets'];
+const unitOptions = ['kg', 'liters', 'boxes', 'kits', 'packs', 'vouchers', 'blankets', 'envelopes', 'prepaid-cards'];
+
+const aidCatalogTemplates: Array<{ name: string; type: AidType; requiresRefrigeration?: boolean; minTemp?: number; maxTemp?: number }> = [
+  { name: 'Staple Food Parcel', type: AidType.FOOD },
+  { name: 'Nutrition Support Kit', type: AidType.FOOD },
+  { name: 'Emergency Medical Pack', type: AidType.MEDICINE, requiresRefrigeration: true, minTemp: 2, maxTemp: 8 },
+  { name: 'Chronic Care Medication Set', type: AidType.MEDICINE, requiresRefrigeration: true, minTemp: 2, maxTemp: 8 },
+  { name: 'Household Stipend Voucher', type: AidType.FINANCIAL },
+  { name: 'Education Support Bundle', type: AidType.SOCIAL },
+  { name: 'Livelihood Recovery Grant', type: AidType.FINANCIAL },
+  { name: 'Winterization Support Pack', type: AidType.OTHER },
+];
 
 async function main() {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -51,7 +65,8 @@ async function main() {
 
     const families = await familyRepo.find({ relations: ['location'] });
     const employees = await userRepo.find({ where: { role: UserRole.EMPLOYEE } });
-    const aids = await aidRepo.find({ relations: ['deposit'] });
+    let aids = await aidRepo.find({ relations: ['deposit'] });
+    aids = await ensureAidCatalog(aidRepo, depositRepo, aids, simulationConfig.minAidCatalog);
 
     if (families.length === 0) {
       throw new Error('No families found. Seed families before running the simulator.');
@@ -177,12 +192,12 @@ async function simulateAidDrops({
     const maxAvailable = Math.min(
       aid.quantity,
       aid.deposit.currentQuantity,
-      faker.number.int({ min: 20, max: 200 }),
+      faker.number.int({ min: 20, max: 240 }),
     );
     if (maxAvailable <= 0) {
       continue;
     }
-    const quantity = Math.max(1, maxAvailable);
+    const quantity = faker.number.int({ min: 1, max: Math.max(1, maxAvailable) });
 
     const distribution = aidDistributionRepo.create({
       visit,
@@ -220,6 +235,49 @@ async function overrideCreatedAt(repo: Repository<AidDistribution>, id: string, 
     .set({ createdAt: timestamp } as any)
     .where('id = :id', { id })
     .execute();
+}
+
+async function ensureAidCatalog(
+  aidRepo: Repository<Aid>,
+  depositRepo: Repository<Deposit>,
+  existingAids: Aid[],
+  targetCount: number,
+) {
+  if (existingAids.length >= targetCount) {
+    return existingAids;
+  }
+
+  const deposits = await depositRepo.find();
+  if (!deposits.length) {
+    throw new Error('No deposits available to mint additional aids for the simulator.');
+  }
+
+  const created: Aid[] = [];
+  const touchedDeposits = new Set<Deposit>();
+
+  while (existingAids.length + created.length < targetCount) {
+    const template = faker.helpers.arrayElement(aidCatalogTemplates);
+    const deposit = faker.helpers.arrayElement(deposits);
+    const quantity = faker.number.int({ min: 180, max: 620 });
+    const aid = aidRepo.create({
+      name: `${template.name} ${faker.number.int({ min: 100, max: 999 })}`,
+      type: template.type,
+      description: faker.commerce.productDescription(),
+      quantity,
+      requiresRefrigeration: template.requiresRefrigeration ?? false,
+      requiredMinTemperatureC: template.minTemp ?? null,
+      requiredMaxTemperatureC: template.maxTemp ?? null,
+      requiredHumidityLevel: null,
+      deposit,
+    });
+    created.push(aid);
+    deposit.currentQuantity = (deposit.currentQuantity ?? 0) + quantity;
+    touchedDeposits.add(deposit);
+  }
+
+  const saved = await aidRepo.save(created);
+  await depositRepo.save(Array.from(touchedDeposits));
+  return [...existingAids, ...saved];
 }
 
 function pickRandomSubset<T>(items: T[], min: number, max: number) {

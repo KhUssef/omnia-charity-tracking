@@ -41,19 +41,19 @@ if (Number.isFinite(fakerSeed)) {
 
 const unitOptions = ['kg', 'liters', 'boxes', 'kits', 'packs', 'vouchers', 'blankets'];
 const cityPresets = [
-	{ city: 'Beirut', region: 'Beirut Governorate', latitude: 33.8938, longitude: 35.5018 },
-	{ city: 'Tripoli', region: 'North Governorate', latitude: 34.4367, longitude: 35.8497 },
-	{ city: 'Sidon', region: 'South Governorate', latitude: 33.5606, longitude: 35.3981 },
-	{ city: 'Tyre', region: 'South Governorate', latitude: 33.273, longitude: 35.1939 },
-	{ city: 'Zahle', region: 'Beqaa Governorate', latitude: 33.8467, longitude: 35.902 },
-	{ city: 'Byblos', region: 'Mount Lebanon Governorate', latitude: 34.1204, longitude: 35.6485 },
+	{ city: 'Tunis', region: 'Tunis Governorate', latitude: 36.8065, longitude: 10.1815 },
+	{ city: 'Sfax', region: 'Sfax Governorate', latitude: 34.7398, longitude: 10.7603 },
+	{ city: 'Sousse', region: 'Sousse Governorate', latitude: 35.8256, longitude: 10.6411 },
+	{ city: 'Kairouan', region: 'Kairouan Governorate', latitude: 35.6781, longitude: 10.0963 },
+	{ city: 'Bizerte', region: 'Bizerte Governorate', latitude: 37.2746, longitude: 9.8739 },
+	{ city: 'Gabes', region: 'Gabes Governorate', latitude: 33.8815, longitude: 10.0982 },
 ];
 
 const depositPresets = [
 	{
-		name: 'Central Cold Chain Depot',
-		city: 'Beirut',
-		region: 'Beirut Governorate',
+		name: 'Tunis Central Relief Depot',
+		city: 'Tunis',
+		region: 'Tunis Governorate',
 		capacity: 2500,
 		isRefrigerated: true,
 		humidityLevel: HumidityLevel.LOW,
@@ -61,20 +61,20 @@ const depositPresets = [
 		maxTemperatureC: 8,
 	},
 	{
-		name: 'North Relief Warehouse',
-		city: 'Tripoli',
-		region: 'North Governorate',
-		capacity: 1800,
+		name: 'Sfax Sahel Warehouse',
+		city: 'Sfax',
+		region: 'Sfax Governorate',
+		capacity: 1900,
 		isRefrigerated: false,
 		humidityLevel: HumidityLevel.MEDIUM,
-		minTemperatureC: 10,
-		maxTemperatureC: 35,
+		minTemperatureC: 8,
+		maxTemperatureC: 32,
 	},
 	{
-		name: 'South Coastal Storage',
-		city: 'Sidon',
-		region: 'South Governorate',
-		capacity: 1500,
+		name: 'South Coast Storage Hub',
+		city: 'Sousse',
+		region: 'Sousse Governorate',
+		capacity: 1600,
 		isRefrigerated: true,
 		humidityLevel: HumidityLevel.HIGH,
 		minTemperatureC: -5,
@@ -156,7 +156,7 @@ function buildUserProfile({ role, email }: { role: UserRole; email: string }) {
 	return {
 		name: faker.person.fullName(),
 		email,
-		phone: faker.helpers.replaceSymbols('+961-##-###-###'),
+		phone: faker.helpers.replaceSymbols('+216-##-###-###'),
 		role,
 	};
 }
@@ -352,7 +352,7 @@ async function seedFamilies(
 	for (let i = 0; i < count; i++) {
 		const family = familyRepo.create({
 			lastName: faker.person.lastName(),
-			phone: faker.helpers.replaceSymbols('+961-7#-###-###'),
+			phone: faker.helpers.replaceSymbols('+216-##-###-###'),
 			address: faker.location.streetAddress(),
 			numberOfMembers: faker.number.int({ min: 2, max: 9 }),
 			containsDisabledMember: faker.datatype.boolean({ probability: 0.25 }),

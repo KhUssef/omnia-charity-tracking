@@ -1,8 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, CreateDateColumn, DeleteDateColumn, ManyToMany, BeforeInsert, BeforeUpdate } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, CreateDateColumn, DeleteDateColumn, ManyToMany, BeforeInsert, BeforeUpdate, OneToMany } from 'typeorm';
 import { FindOptionsSelect } from 'typeorm';
 import { Visit } from '../../visit/entities/visit.entity';
 import { Location } from '../../location/entities/location.entity';
 import { computeVulnerabilityScore } from '../../common/vulnerability-score';
+import { FamilyNeed } from './family-need.entity';
 
 @Entity()
 export class Family {
@@ -26,6 +27,9 @@ export class Family {
     numberOfMembers: number;
     @ManyToMany(() => Visit, (visit) => visit.families)
     visits: Visit[];
+
+    @OneToMany(() => FamilyNeed, (need) => need.family, { cascade: true })
+    needs: FamilyNeed[];
 
     @Column({default: false})
     containsDisabledMember: boolean;

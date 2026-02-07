@@ -217,7 +217,8 @@ export class StatsService {
       .orderBy('bucket', 'ASC')
       .getRawMany();
 
-    return rows.map((row) => ({
+    return rows.map((row) => (
+      {
       bucket: row.bucket,
       totalVisits: Number(row.visitCount) || 0,
       completedVisits: Number(row.completedCount) || 0,
@@ -234,6 +235,7 @@ export class StatsService {
     if (grouped.size === 0) {
       grouped.set(AidType.OTHER, 0);
     }
+    
 
     const stats = Array.from(grouped.entries()).map(([aidType, quantity]) =>
       this.depositStatRepo.create({

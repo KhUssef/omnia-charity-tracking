@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { User, UserRole } from 'src/user/entities/user.entity';
+import { UpsertFamilyNeedsDto } from './dto/upsert-family-needs.dto';
 
 @Controller('family')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -40,6 +41,30 @@ export class FamilyController {
   @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])
   update(@Param('id') id: string, @Body() updateFamilyDto: UpdateFamilyDto) {
     return this.familyService.update(id, updateFamilyDto);
+  }
+
+  @Get(':id/needs')
+  @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])
+  getNeeds(@Param('id') id: string) {
+    return this.familyService.getNeeds(id);
+  }
+
+  @Patch(':id/needs')
+  @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])
+  upsertNeeds(@Param('id') id: string, @Body() dto: UpsertFamilyNeedsDto) {
+    return this.familyService.upsertNeeds(id, dto);
+  }
+
+  @Get(':id/aid-recommendation')
+  @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])
+  recommendAid(@Param('id') id: string) {
+    return this.familyService.recommendAidDistribution(id);
+  }
+
+  @Get('needs/catalog/list')
+  @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])
+  getNeedCatalog() {
+    return this.familyService.getNeedCatalog();
   }
 
   @Delete(':id')

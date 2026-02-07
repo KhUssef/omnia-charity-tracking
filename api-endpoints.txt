@@ -78,6 +78,10 @@ GET /family/search/by-lastname?q=
 GET /family/search/by-phone?q=
 GET /family/:id
 PATCH /family/:id
+GET /family/:id/needs
+PATCH /family/:id/needs
+GET /family/:id/aid-recommendation
+GET /family/needs/catalog/list
 DELETE /family/:id
 
 Location

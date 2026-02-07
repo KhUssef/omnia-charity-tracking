@@ -15,6 +15,7 @@ import { ConfigService } from './config/config.service';
 import { Aid } from './aid/entities/aid.entity';
 import { AidDistribution } from './aid-distribution/entities/aid-distribution.entity';
 import { Family } from './family/entities/family.entity';
+import { FamilyNeed } from './family/entities/family-need.entity';
 import { Visit } from './visit/entities/visit.entity';
 import { VisitAidStat } from './dashboard/entities/visit-aid-stat.entity';
 import { Location } from './location/entities/location.entity';
@@ -38,7 +39,7 @@ import { DepositStorageStat } from './dashboard/entities/deposit-storage-stat.en
           username: dbConfig.username,
           password: dbConfig.password,
           database: dbConfig.database,
-          entities: [User, Aid, AidDistribution, Family, Visit, Location, VisitAidStat, CityBoundary, Deposit, DepositStorageStat],
+          entities: [User, Aid, AidDistribution, Family, FamilyNeed, Visit, Location, VisitAidStat, CityBoundary, Deposit, DepositStorageStat],
           synchronize: true,
         };
       },
