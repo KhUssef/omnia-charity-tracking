@@ -63,3 +63,9 @@ export const FamilySelectOptions: FindOptionsSelect<Family> = {
     createdAt: true,
     deletedAt: true,
 };
+
+export const FamilySearchSelectOptions: FindOptionsSelect<Family> = {
+	id: true,
+	lastName: true,
+	phone: true,
+};

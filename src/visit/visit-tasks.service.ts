@@ -34,8 +34,8 @@ export class VisitTasksService {
         visit.isCompleted = true;
         await this.visitRepo.save(visit);
 
-        if (visit.user && visit.user.currentVisitId === visit.id) {
-          await this.userRepo.update(visit.user.id, { currentVisitId: null });
+        if (visit.user && visit.user.currentVisit && visit.user.currentVisit.id === visit.id) {
+          await this.userRepo.update(visit.user.id, { currentVisit: null });
         }
       }
     }
@@ -67,7 +67,7 @@ export class VisitTasksService {
       visit.isActive = true;
       await this.visitRepo.save(visit);
 
-      await this.userRepo.update(visit.user.id, { currentVisitId: visit.id });
+      await this.userRepo.update(visit.user.id, { currentVisit: visit });
     }
   }
 }

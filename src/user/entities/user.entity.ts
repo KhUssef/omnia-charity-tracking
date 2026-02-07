@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, DeleteDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, DeleteDateColumn, ManyToOne } from 'typeorm';
 import { FindOptionsSelect } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Visit } from '../../visit/entities/visit.entity';
@@ -6,7 +6,7 @@ import { Visit } from '../../visit/entities/visit.entity';
 export enum UserRole {
     ADMIN = 'ADMIN',
     USER = 'USER',
-    WORKER = 'WORKER',
+    EMPLOYEE = 'EMPLOYEE',
 }
 
 
@@ -43,9 +43,11 @@ export class User {
     @OneToMany(() => Visit, (visit) => visit.user)
     visits: Visit[];
 
-	// Denormalized pointer to the user's current active visit (if any)
-	@Column({ type: 'uuid', nullable: true })
-	currentVisitId: string | null;
+	@Column({ default: false })
+	isEmailValidated: boolean;
+
+	@ManyToOne(() => Visit, { nullable: true })
+    currentVisit: Visit | null;
 
     @CreateDateColumn()
     createdAt: Date;
@@ -61,7 +63,10 @@ export const UserSelectOptions: FindOptionsSelect<User> = {
     email: true,
     role: true,
     phone: true,
-    currentVisitId: true,
+    isEmailValidated: true,
+    currentVisit:{
+        id: true,
+    },
     createdAt: true,
     deletedAt: true,
 };
