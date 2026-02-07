@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { VisitService } from './visit.service';
 import { CreateVisitDto } from './dto/create-visit.dto';
 import { UpdateVisitDto } from './dto/update-visit.dto';
@@ -18,13 +18,21 @@ export class VisitController {
   }
 
   @Get('active')
-  findActive() {
-    return this.visitService.findActive();
+  findActive(@Query('limit') limit?: string) {
+    const parsed = limit ? Number.parseInt(limit, 10) : undefined;
+    return this.visitService.findActive(Number.isNaN(parsed) ? undefined : parsed);
   }
 
-  @Get('previous/:limit')
-  findPrevious(@Param('limit', ParseIntPipe) limit: number) {
-    return this.visitService.findPrevious(limit);
+  @Get('upcoming')
+  findUpcoming(@Query('limit') limit?: string) {
+    const parsed = limit ? Number.parseInt(limit, 10) : undefined;
+    return this.visitService.findUpcoming(Number.isNaN(parsed) ? undefined : parsed);
+  }
+
+  @Get('previous')
+  findPrevious(@Query('limit') limit?: string) {
+    const parsed = limit ? Number.parseInt(limit, 10) : undefined;
+    return this.visitService.findPrevious(Number.isNaN(parsed) ? undefined : parsed);
   }
 
   @Get(':id')

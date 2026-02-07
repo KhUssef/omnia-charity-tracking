@@ -1,0 +1,107 @@
+API ENDPOINTS
+=============
+
+App
+---
+GET /
+
+Auth
+----
+POST /auth/register
+POST /auth/login
+POST /auth/refresh
+GET /auth/me
+POST /auth/logout
+
+Aid
+---
+POST /aid
+GET /aid?search=
+GET /aid/:id
+PATCH /aid/:id
+DELETE /aid/:id
+
+Aid Distribution (JWT + roles)
+------------------------------
+POST /aid-distribution
+GET /aid-distribution/me/current-visit
+GET /aid-distribution/by-visit/:visitId
+GET /aid-distribution/:id
+PATCH /aid-distribution/:id
+DELETE /aid-distribution/:id
+
+Dashboard
+---------
+GET /dashboard/heatmap/families
+GET /dashboard/heatmap/visits
+GET /dashboard/families/heatmap
+GET /dashboard/visits/heatmap
+GET /dashboard/cities/families
+GET /dashboard/cities/visits
+GET /dashboard/cities/aids/heatmap
+GET /dashboard/time/families?months=
+GET /dashboard/time/visits?months=
+GET /dashboard/time/needy-comparison?months=
+GET /dashboard/aids/pie?limit=
+GET /dashboard/aids/city/:city/top/:n
+GET /dashboard/aids/frequency
+GET /dashboard/aids/type-breakdown?region=&limit=
+GET /dashboard/aids/type-breakdown/by-region?limit=
+GET /dashboard/families/histogram?months=
+GET /dashboard/families/size-distribution
+GET /dashboard/families/vulnerability-profile
+GET /dashboard/visits/timeline?months=
+GET /dashboard/visits/completion-rate
+GET /dashboard/deposits/summary
+GET /dashboard/deposits/:id/history?limit=
+GET /dashboard/users/activity
+GET /dashboard/ai/risk-map
+GET /dashboard/ai/priority-families?limit=
+
+Deposits
+--------
+POST /deposits
+GET /deposits
+GET /deposits/:id
+GET /deposits/:id/capacity
+PATCH /deposits/:id
+DELETE /deposits/:id
+
+Family (JWT + roles)
+--------------------
+POST /family
+GET /family/search/by-lastname?q=
+GET /family/search/by-phone?q=
+GET /family/:id
+PATCH /family/:id
+DELETE /family/:id
+
+Location
+--------
+POST /location
+GET /location
+GET /location/:id
+PATCH /location/:id
+DELETE /location/:id
+POST /location/boundaries
+GET /location/boundaries
+GET /location/boundaries/:city
+
+User (JWT + roles)
+------------------
+POST /user
+POST /user/:userId/assign-visit/:visitId
+POST /user/me/join-visit/:visitId
+GET /user/employees/usernames?q=
+GET /user/me/current-visit
+
+Visit
+-----
+POST /visit
+GET /visit
+GET /visit/active?limit=
+GET /visit/upcoming?limit=
+GET /visit/previous?limit=
+GET /visit/:id
+PATCH /visit/:id
+DELETE /visit/:id

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, MoreThan, Repository } from 'typeorm';
 import { CreateVisitDto } from './dto/create-visit.dto';
 import { UpdateVisitDto } from './dto/update-visit.dto';
 import { Visit, VisitSelectOptions } from './entities/visit.entity';
@@ -11,6 +11,8 @@ import { StatsService } from '../dashboard/stats.service';
 
 @Injectable()
 export class VisitService {
+  private static readonly DEFAULT_LIMIT = 5;
+
   constructor(
     @InjectRepository(Visit)
     private readonly visitRepo: Repository<Visit>,
@@ -69,19 +71,36 @@ export class VisitService {
     return this.visitRepo.find({ select: VisitSelectOptions });
   }
 
-  async findActive() {
+  async findActive(limit?: number) {
+    const take = this.resolveLimit(limit);
     return this.visitRepo.find({
       where: { isActive: true, isCompleted: false },
+      order: { startDate: 'ASC' },
+      take,
       select: VisitSelectOptions,
       relations: ['users'],
     });
   }
 
-  async findPrevious(limit: number) {
+  async findUpcoming(limit?: number) {
+    const take = this.resolveLimit(limit);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return this.visitRepo.find({
+      where: { isCompleted: false, startDate: MoreThan(today) },
+      order: { startDate: 'ASC' },
+      take,
+      select: VisitSelectOptions,
+      relations: ['users'],
+    });
+  }
+
+  async findPrevious(limit?: number) {
+    const take = this.resolveLimit(limit);
     return this.visitRepo.find({
       where: { isCompleted: true },
       order: { endDate: 'DESC' },
-      take: limit,
+      take,
       select: VisitSelectOptions,
       relations: ['users'],
     });
@@ -164,5 +183,12 @@ export class VisitService {
     }
     await this.visitRepo.softDelete(id);
     return { success: true };
+  }
+
+  private resolveLimit(limit?: number) {
+    if (limit && limit > 0) {
+      return limit;
+    }
+    return VisitService.DEFAULT_LIMIT;
   }
 }
