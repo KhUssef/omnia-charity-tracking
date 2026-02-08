@@ -9,10 +9,10 @@ export class CityBoundary {
   @Column()
   city: string;
 
-  @Column({ type: 'varchar', length: 128, nullable: true })
+  @Column({ nullable: true })
   region: string | null;
 
-  @Column({ type: 'varchar', length: 16, nullable: true })
+  @Column({ nullable: true })
   countryCode: string | null;
 
   @Column({ type: 'json' })
@@ -21,13 +21,13 @@ export class CityBoundary {
   @Column({ type: 'json', nullable: true })
   bbox: [number, number, number, number] | null;
 
-  @Column({ type: 'varchar', length: 128, nullable: true })
+  @Column({ nullable: true })
   source: string | null;
 
-  @Column({ type: 'varchar', length: 128, nullable: true })
+  @Column({ nullable: true })
   externalId: string | null;
 
-  @Column({ type: 'varchar', length: 64, nullable: true })
+  @Column({ nullable: true })
   externalType: string | null;
 
   @CreateDateColumn()

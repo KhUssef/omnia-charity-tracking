@@ -140,10 +140,12 @@ export class FamilyService {
     if (!term?.trim()) {
       return [];
     }
-    return this.familyRepo.find({
-      where: { phone: Like(`${term}%`) },
-      select: FamilySearchSelectOptions,
-    });
+    const sanitized = term.replace(/-/g, '');
+    return this.familyRepo
+      .createQueryBuilder('family')
+      .select(['family.id', 'family.lastName', 'family.phone'])
+      .where("REPLACE(family.phone, '-', '') LIKE :phone", { phone: `${sanitized}%` })
+      .getMany();
   }
 
   getNeedCatalog() {
