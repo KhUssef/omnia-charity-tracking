@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -73,19 +73,28 @@ export class UserService {
     return this.assignUserToVisit(userId, visitId);
   }
 
-  async getEmployeeUsernames(prefix?: string) {
-    const where = prefix
+  async getEmployeeUsernames(query?: string) {
+    const normalized = query?.trim().toLowerCase();
+
+    const where = normalized
       ? [
-        { role: UserRole.EMPLOYEE, name: Like(`${prefix}%`) },
-        { role: UserRole.EMPLOYEE, email: Like(`${prefix}%`) },
+        {
+          role: UserRole.EMPLOYEE,
+          name: Raw((alias) => `LOWER(${alias}) LIKE :name`, { name: `%${normalized}%` }),
+        },
+        {
+          role: UserRole.EMPLOYEE,
+          email: Raw((alias) => `LOWER(${alias}) LIKE :email`, { email: `%${normalized}%` }),
+        },
       ]
       : { role: UserRole.EMPLOYEE };
 
-    const users = await this.userRepo.find({
+    return this.userRepo.find({
       where,
       select: ['id', 'name', 'email'],
+      order: { name: 'ASC' },
+      take: 25,
     });
-    return users;
   }
 
   async getCurrentVisitForUser(userId: string) {
@@ -102,5 +111,19 @@ export class UserService {
       select: UserSelectOptions,
     });
     return visit;
+  }
+
+  async getCurrentUserProfile(userId: string) {
+    const profile = await this.userRepo.findOne({
+      where: { id: userId },
+      select: UserSelectOptions,
+      relations: ['currentVisit'],
+    });
+
+    if (!profile) {
+      throw new NotFoundException('User not found');
+    }
+
+    return profile;
   }
 }

@@ -20,6 +20,14 @@ export class UserController {
     return this.userService.createEmployee(createUserDto);
   }
 
+  // Get current authenticated user profile
+  @UseGuards(JwtAuthGuard)
+  @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])
+  @Get('me')
+  getMe(@ConnectedUser() user: JwtPayload) {
+    return this.userService.getCurrentUserProfile(user.sub);
+  }
+
   // Admin assigns any user to a visit
   @Roles([UserRole.EMPLOYEE, UserRole.ADMIN])
   @Post(':userId/assign-visit/:visitId')

@@ -8,6 +8,7 @@ import { Family } from '../family/entities/family.entity';
 import { LocationService } from '../location/location.service';
 import { User } from '../user/entities/user.entity';
 import { StatsService } from '../dashboard/stats.service';
+import { VisitTasksService } from './visit-tasks.service';
 
 @Injectable()
 export class VisitService {
@@ -22,6 +23,7 @@ export class VisitService {
     private readonly userRepo: Repository<User>,
     private readonly locationService: LocationService,
     private readonly statsService: StatsService,
+    private readonly visitTasksService: VisitTasksService,
   ) {}
 
   async create(createVisitDto: CreateVisitDto) {
@@ -61,10 +63,14 @@ export class VisitService {
     }
 
     const saved = await this.visitRepo.save(visit);
-    return this.visitRepo.findOne({
+    const fullVisit = await this.visitRepo.findOne({
       where: { id: saved.id },
       select: VisitSelectOptions,
     });
+
+    await this.visitTasksService.runSyncActiveVisitsOnce();
+
+    return fullVisit;
   }
 
   async findAll() {
