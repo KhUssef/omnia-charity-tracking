@@ -70,4 +70,6 @@ export class Deposit {
 
   @UpdateDateColumn()
   updatedAt: Date;
-}
+    @Column('simple-array', { nullable: true })
+    capabilities?: string[];
+};
