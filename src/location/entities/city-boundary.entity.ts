@@ -1,18 +1,17 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
-@Unique('UQ_city_boundary_name', ['city'])
 export class CityBoundary {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 120 })
   city: string;
 
-  @Column({ type: 'varchar', length: 128, nullable: true })
+  @Column({ type: 'varchar', length: 120, nullable: true })
   region: string | null;
 
-  @Column({ type: 'varchar', length: 16, nullable: true })
+  @Column({ type: 'char', length: 2, nullable: true })
   countryCode: string | null;
 
   @Column({ type: 'json' })
@@ -21,13 +20,13 @@ export class CityBoundary {
   @Column({ type: 'json', nullable: true })
   bbox: [number, number, number, number] | null;
 
-  @Column({ type: 'varchar', length: 128, nullable: true })
+  @Column({ type: 'varchar', length: 120, nullable: true })
   source: string | null;
 
-  @Column({ type: 'varchar', length: 128, nullable: true })
+  @Column({ type: 'varchar', length: 120, nullable: true })
   externalId: string | null;
 
-  @Column({ type: 'varchar', length: 64, nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   externalType: string | null;
 
   @CreateDateColumn()
