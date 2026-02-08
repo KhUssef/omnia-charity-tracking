@@ -9,10 +9,10 @@ export class CityBoundary {
   @Column()
   city: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 120, nullable: true })
   region: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'char', length: 2, nullable: true })
   countryCode: string | null;
 
   @Column({ type: 'json' })
