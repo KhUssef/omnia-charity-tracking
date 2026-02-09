@@ -27,15 +27,6 @@ export class UserController {
   getMe(@ConnectedUser() user: JwtPayload) {
     return this.userService.getCurrentUserProfile(user.sub);
   }
-
-  // Admin assigns any user to a visit
-  @Roles([UserRole.EMPLOYEE, UserRole.ADMIN])
-  @Post(':userId/assign-visit/:visitId')
-  assignUserToVisit(@Param('userId') userId: string, @Param('visitId') visitId: string) {
-    return this.userService.assignUserToVisit(userId, visitId);
-  }
-
-  // Current authenticated user joins a visit
   @UseGuards(JwtAuthGuard)
   @Roles([UserRole.EMPLOYEE])
   @Post('me/join-visit/:visitId')
@@ -45,6 +36,16 @@ export class UserController {
   ) {
     return this.userService.joinVisitForUser(user.sub, visitId);
   }
+
+  // Admin assigns any user to a visit
+  @Roles([UserRole.EMPLOYEE, UserRole.ADMIN])
+  @Post(':userId/assign-visit/:visitId')
+  assignUserToVisit(@Param('userId') userId: string, @Param('visitId') visitId: string) {
+    return this.userService.assignUserToVisit(userId, visitId);
+  }
+
+  // Current authenticated user joins a visit
+  
 
   // Get employee usernames for autocomplete
   @UseGuards(JwtAuthGuard)

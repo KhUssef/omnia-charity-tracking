@@ -5,6 +5,7 @@ import { Deposit } from './entities/deposit.entity';
 import { CreateDepositDto } from './dto/create-deposit.dto';
 import { UpdateDepositDto } from './dto/update-deposit.dto';
 import { StatsService } from '../dashboard/stats.service';
+import { RecommendDepositDto } from './dto/recommend-deposit.dto';
 
 @Injectable()
 export class DepositService {
@@ -36,6 +37,42 @@ export class DepositService {
       throw new NotFoundException('Deposit not found');
     }
     return deposit;
+  }
+  async recommendDeposits(dto: RecommendDepositDto): Promise<Deposit[]> {
+    const deposits = await this.depositRepo.find();
+      return deposits
+        .filter(deposit => {
+          // Check capacity
+          const available = deposit.capacity - (deposit.currentQuantity || 0);
+          if (available < dto.quantity) {console.log('Insufficient capacity'); return false;}
+          // Check humidity
+          if (
+            dto.requiredHumidityLevel != null &&
+            deposit.humidityLevel !== dto.requiredHumidityLevel
+          ) {console.log('Humidity level mismatch'); return false;}
+          // Check temperature
+          if (
+            dto.requiredMinTemperatureC != null &&
+            (deposit.minTemperatureC == null || deposit.minTemperatureC < dto.requiredMinTemperatureC)
+          ) {console.log('Minimum temperature requirement not met'); return false;}
+          if (
+            dto.requiredMaxTemperatureC != null &&
+            (deposit.maxTemperatureC == null || deposit.maxTemperatureC > dto.requiredMaxTemperatureC)
+          ) {console.log('Maximum temperature requirement not met', dto.requiredMaxTemperatureC, deposit.maxTemperatureC); return false;}
+          // Check capabilities
+          if (dto.requiredCapabilities && dto.requiredCapabilities.length > 0) {
+            const depositCaps = Array.isArray(deposit.capabilities) ? deposit.capabilities : [];
+            const hasAll = dto.requiredCapabilities.every(cap => depositCaps.includes(cap));
+            if (!hasAll) {console.log('Required capabilities not met'); return false;}
+          }
+          return true;
+        })
+        .sort((a, b) => {
+          // Sort by fullness: fullest first
+          const fullnessA = (a.currentQuantity || 0) / a.capacity;
+          const fullnessB = (b.currentQuantity || 0) / b.capacity;
+          return fullnessA - fullnessB ;
+        });
   }
 
   async update(id: string, dto: UpdateDepositDto) {

@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/commo
 import { DepositService } from './deposit.service';
 import { CreateDepositDto } from './dto/create-deposit.dto';
 import { UpdateDepositDto } from './dto/update-deposit.dto';
+import { RecommendDepositDto } from './dto/recommend-deposit.dto';
 
 @Controller('deposits')
 export class DepositController {
@@ -35,5 +36,10 @@ export class DepositController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.depositService.remove(id);
+  }
+  
+  @Post('recommend')
+  async recommendDeposits(@Body() dto: RecommendDepositDto) {
+    return this.depositService.recommendDeposits(dto);
   }
 }
