@@ -25,6 +25,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { Deposit } from './deposit/entities/deposit.entity';
 import { DepositModule } from './deposit/deposit.module';
 import { DepositStorageStat } from './dashboard/entities/deposit-storage-stat.entity';
+import { AiRecommendationModule } from './ai-recommendation/ai-recommendation.module';
 @Module({
   imports: [ConfigModule,
     TypeOrmModule.forRootAsync({
@@ -43,7 +44,7 @@ import { DepositStorageStat } from './dashboard/entities/deposit-storage-stat.en
           synchronize: true,
         };
       },
-    }),AuthModule, FamilyModule, UserModule, VisitModule, LocationModule, AidModule, AidDistributionModule, DashboardModule, DepositModule, ScheduleModule.forRoot()],
+    }),AuthModule, FamilyModule, UserModule, VisitModule, LocationModule, AidModule, AidDistributionModule, DashboardModule, DepositModule, AiRecommendationModule , ScheduleModule.forRoot()],
   controllers: [AppController],
   providers: [AppService],
 })
