@@ -32,13 +32,15 @@ export class User {
     salt: string;
 
 
-    @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+    @Column({ type: 'varchar', default: UserRole.USER })
     role: UserRole;
 
 
     @Column({ nullable: true })
     phone: string;
 
+    @Column({ default: true })
+    isActive: boolean;
 
     @ManyToMany(() => Visit, (visit) => visit.users)
     visits: Visit[];

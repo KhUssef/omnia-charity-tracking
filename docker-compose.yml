@@ -1,0 +1,35 @@
+services:
+  mysql:
+    image: mysql:8
+    container_name: omnia-mysql
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$$MYSQL_ROOT_PASSWORD\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: omnia-app
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    ports:
+      - "3000:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
