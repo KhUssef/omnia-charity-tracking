@@ -15,12 +15,28 @@ export class ConfigService {
   }
 
   getDatabaseConfig(): DatabaseConfig {
+    // Supporte les variables custom (DATABASE_*) et celles de Railway/MySQL (MYSQL*)
     return {
-      host: this.configService.get<string>('DATABASE_HOST') || 'localhost',
-      port: this.configService.get<number>('DATABASE_PORT') || 3306,
-      username: this.configService.get<string>('DATABASE_USERNAME') || 'newuser',
-      password: this.configService.get<string>('DATABASE_PASSWORD') || 'password',
-      database: this.configService.get<string>('DATABASE_NAME') || 'omnia',
+      host: this.configService.get<string>('DATABASE_HOST')
+        || this.configService.get<string>('MYSQLHOST')
+        || this.configService.get<string>('MYSQL_HOST')
+        || 'localhost',
+      port: this.configService.get<number>('DATABASE_PORT')
+        || this.configService.get<number>('MYSQLPORT')
+        || this.configService.get<number>('MYSQL_PORT')
+        || 3306,
+      username: this.configService.get<string>('DATABASE_USERNAME')
+        || this.configService.get<string>('MYSQLUSER')
+        || this.configService.get<string>('MYSQL_USER')
+        || 'newuser',
+      password: this.configService.get<string>('DATABASE_PASSWORD')
+        || this.configService.get<string>('MYSQLPASSWORD')
+        || this.configService.get<string>('MYSQL_PASSWORD')
+        || 'password',
+      database: this.configService.get<string>('DATABASE_NAME')
+        || this.configService.get<string>('MYSQLDATABASE')
+        || this.configService.get<string>('MYSQL_DATABASE')
+        || 'omnia',
     };
   }
 
