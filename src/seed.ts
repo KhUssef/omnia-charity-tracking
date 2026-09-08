@@ -46,7 +46,7 @@ async function seed() {
       email: 'worker@omnia.org',
       password: hashedPassword,
       salt,
-      role: UserRole.WORKER,
+      role: UserRole.EMPLOYEE,
       isActive: true,
     });
     await userRepo.save(worker);
@@ -84,14 +84,14 @@ async function seed() {
   // Visites de test
   if ((await visitRepo.count()) === 0) {
     const families = await familyRepo.find();
-    const workers = await userRepo.find({ where: { role: UserRole.WORKER } });
+    const workers = await userRepo.find({ where: { role: UserRole.EMPLOYEE } });
     const worker = workers[0];
 
     const visits = visitRepo.create([
-      { startDate: new Date(Date.now() - 86400000 * 2), isActive: false, isCompleted: true, notes: 'Distribution réussie, famille très reconnaissante.', family: families[0], user: worker },
-      { startDate: new Date(Date.now() - 86400000 * 5), isActive: false, isCompleted: true, notes: 'Besoin médical identifié, suivi prévu.', family: families[1], user: worker },
-      { startDate: new Date(), isActive: true, isCompleted: false, notes: 'Visite en cours.', family: families[2], user: worker },
-      { startDate: new Date(Date.now() + 86400000), isActive: false, isCompleted: false, notes: 'Visite planifiée.', family: families[3], user: worker },
+      { startDate: new Date(Date.now() - 86400000 * 2), isActive: false, isCompleted: true, notes: 'Distribution réussie, famille très reconnaissante.', families: [families[0]], users: [worker] },
+      { startDate: new Date(Date.now() - 86400000 * 5), isActive: false, isCompleted: true, notes: 'Besoin médical identifié, suivi prévu.', families: [families[1]], users: [worker] },
+      { startDate: new Date(), isActive: true, isCompleted: false, notes: 'Visite en cours.', families: [families[2]], users: [worker] },
+      { startDate: new Date(Date.now() + 86400000), isActive: false, isCompleted: false, notes: 'Visite planifiée.', families: [families[3]], users: [worker] },
     ]);
     await visitRepo.save(visits);
     console.log(`${visits.length} visites créées`);
@@ -99,13 +99,13 @@ async function seed() {
 
   // Distributions de test
   if ((await distRepo.count()) === 0) {
-    const visits = await visitRepo.find({ relations: ['family'] });
+    const visits = await visitRepo.find({ relations: ['families'] });
     const aids = await aidRepo.find();
     if (visits.length > 0 && aids.length > 0) {
       const distributions = distRepo.create([
-        { quantity: 3, date: new Date(Date.now() - 86400000 * 2), aid: aids[0], visit: visits[0] },
-        { quantity: 2, date: new Date(Date.now() - 86400000 * 5), aid: aids[1], visit: visits[1] },
-        { quantity: 1, date: new Date(), aid: aids[2], visit: visits[2] },
+        { quantity: 3, createdAt: new Date(Date.now() - 86400000 * 2), aid: aids[0], visit: visits[0] },
+        { quantity: 2, createdAt: new Date(Date.now() - 86400000 * 5), aid: aids[1], visit: visits[1] },
+        { quantity: 1, createdAt: new Date(), aid: aids[2], visit: visits[2] },
       ]);
       await distRepo.save(distributions);
       console.log(`${distributions.length} distributions créées`);

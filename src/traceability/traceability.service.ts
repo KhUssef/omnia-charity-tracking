@@ -24,8 +24,8 @@ export class TraceabilityService {
 
   async getTraceability(aidId?: string): Promise<TraceabilityNode[]> {
     const aids = aidId
-      ? await this.aidRepository.find({ where: { id: aidId }, relations: ['distributions', 'distributions.visit', 'distributions.visit.family'] })
-      : await this.aidRepository.find({ relations: ['distributions', 'distributions.visit', 'distributions.visit.family'] });
+      ? await this.aidRepository.find({ where: { id: aidId }, relations: ['distributions', 'distributions.visit', 'distributions.visit.families'] })
+      : await this.aidRepository.find({ relations: ['distributions', 'distributions.visit', 'distributions.visit.families'] });
 
     if (aids.length === 0) {
       // Return mock data for demo
@@ -106,7 +106,7 @@ export class TraceabilityService {
         id: dist.id,
         type: 'distribution' as const,
         name: `Distribution ${dist.id.slice(0, 6)}`,
-        date: dist.date ? new Date(dist.date).toISOString() : undefined,
+        date: dist.createdAt ? new Date(dist.createdAt).toISOString() : undefined,
         details: `Quantité: ${dist.quantity}`,
         children: dist.visit
           ? [
@@ -116,13 +116,13 @@ export class TraceabilityService {
                 name: `Visite du ${new Date(dist.visit.startDate).toLocaleDateString('fr-FR')}`,
                 date: new Date(dist.visit.startDate).toISOString(),
                 details: dist.visit.notes || 'Visite effectuée',
-                children: dist.visit.family
+                children: dist.visit.families?.length
                   ? [
                       {
-                        id: dist.visit.family.id,
+                        id: dist.visit.families[0].id,
                         type: 'family' as const,
-                        name: `Famille ${dist.visit.family.lastName}`,
-                        details: `${dist.visit.family.numberOfMembers} membres, ${dist.visit.family.address}`,
+                        name: `Famille ${dist.visit.families[0].lastName}`,
+                        details: `${dist.visit.families[0].numberOfMembers} membres, ${dist.visit.families[0].address}`,
                       },
                     ]
                   : undefined,

@@ -29,8 +29,8 @@ export class AdminService {
     });
     const totalUsers = await this.userRepository.count();
     const recentDistributions = await this.distributionRepository.find({
-      relations: ['aid', 'visit', 'visit.family'],
-      order: { date: 'DESC' },
+      relations: ['aid', 'visit', 'visit.families'],
+      order: { createdAt: 'DESC' },
       take: 5,
     });
     return {
