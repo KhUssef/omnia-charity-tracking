@@ -11,7 +11,6 @@ import { FamilyModule } from './family/family.module';
 import { ConfigModule } from './config/config.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/entities/user.entity';
-import { ConfigService } from './config/config.service';
 import { Aid } from './aid/entities/aid.entity';
 import { AidDistribution } from './aid-distribution/entities/aid-distribution.entity';
 import { Family } from './family/entities/family.entity';
@@ -26,25 +25,27 @@ import { Deposit } from './deposit/entities/deposit.entity';
 import { DepositModule } from './deposit/deposit.module';
 import { DepositStorageStat } from './dashboard/entities/deposit-storage-stat.entity';
 import { AiRecommendationModule } from './ai-recommendation/ai-recommendation.module';
+
+// Lecture directe de process.env pour Railway (évite tout problème de ConfigModule)
+const dbHost = process.env.DATABASE_HOST || process.env.MYSQLHOST || process.env.MYSQL_HOST || 'localhost';
+const dbPort = parseInt(process.env.DATABASE_PORT || process.env.MYSQLPORT || process.env.MYSQL_PORT || '3306', 10);
+const dbUser = process.env.DATABASE_USERNAME || process.env.MYSQLUSER || process.env.MYSQL_USER || 'root';
+const dbPass = process.env.DATABASE_PASSWORD || process.env.MYSQLPASSWORD || process.env.MYSQL_PASSWORD || 'root';
+const dbName = process.env.DATABASE_NAME || process.env.MYSQLDATABASE || process.env.MYSQL_DATABASE || 'omnia';
+
 @Module({
   imports: [ConfigModule,
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => {
-        const dbConfig = configService.getDatabaseConfig();
-        return {
-          type: 'mysql',
-          host: dbConfig.host,
-          port: dbConfig.port,
-          username: dbConfig.username,
-          password: dbConfig.password,
-          database: dbConfig.database,
-          entities: [User, Aid, AidDistribution, Family, FamilyNeed, Visit, Location, VisitAidStat, CityBoundary, Deposit, DepositStorageStat],
-          synchronize: true,
-        };
-      },
-    }),AuthModule, FamilyModule, UserModule, VisitModule, LocationModule, AidModule, AidDistributionModule, DashboardModule, DepositModule, AiRecommendationModule , ScheduleModule.forRoot()],
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: dbHost,
+      port: dbPort,
+      username: dbUser,
+      password: dbPass,
+      database: dbName,
+      entities: [User, Aid, AidDistribution, Family, FamilyNeed, Visit, Location, VisitAidStat, CityBoundary, Deposit, DepositStorageStat],
+      synchronize: true,
+    }),
+    AuthModule, FamilyModule, UserModule, VisitModule, LocationModule, AidModule, AidDistributionModule, DashboardModule, DepositModule, AiRecommendationModule, ScheduleModule.forRoot()],
   controllers: [AppController],
   providers: [AppService],
 })
