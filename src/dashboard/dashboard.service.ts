@@ -491,7 +491,15 @@ export class DashboardService {
     const activeVisits = await this.visitRepo.count({ where: { isActive: true, isCompleted: false } });
 
     const monthlyVisits = await this.visitsOverTime(6);
-    const familiesByAidType = await this.aidPie(10);
+
+    const aidTypeRows = await this.aidDistributionRepo
+      .createQueryBuilder('dist')
+      .innerJoin('dist.aid', 'aid')
+      .select('aid.type', 'aidType')
+      .addSelect('SUM(dist.quantity)', 'totalQuantity')
+      .groupBy('aid.type')
+      .getRawMany();
+
     const recentDistributions = await this.aidDistributionRepo.find({
       relations: ['aid', 'visit', 'visit.families'],
       order: { createdAt: 'DESC' },
@@ -503,8 +511,8 @@ export class DashboardService {
       totalVisits,
       totalAidDistributions,
       activeVisits,
-      monthlyVisits: (monthlyVisits || []).map((m: any) => ({ month: m.label || m.month, count: m.count || 0 })),
-      familiesByAidType: Object.fromEntries((familiesByAidType || []).map((a: any) => [a.type || a.label, a.count || a.value || 0])),
+      monthlyVisits: (monthlyVisits || []).map((m: any) => ({ month: m.bucket, count: m.visitCount })),
+      familiesByAidType: Object.fromEntries((aidTypeRows || []).map((r: any) => [r.aidType, Number(r.totalQuantity) || 0])),
       recentDistributions,
     };
   }

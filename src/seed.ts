@@ -88,6 +88,7 @@ const visitNotes = [
 async function seed() {
   const ds = dataSource as DataSource;
   await ds.initialize();
+  await ds.synchronize();
 
   const userRepo = ds.getRepository(User);
   const familyRepo = ds.getRepository(Family);

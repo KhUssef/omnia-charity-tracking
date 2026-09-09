@@ -28,6 +28,7 @@ import { AiRecommendationModule } from './ai-recommendation/ai-recommendation.mo
 import { ChatbotModule } from './chatbot/chatbot.module';
 import { ContactModule } from './contact/contact.module';
 import { ContactMessage } from './contact/entities/contact-message.entity';
+import { News } from './news/entities/news.entity';
 
 // Lecture directe de process.env pour Railway (évite tout problème de ConfigModule)
 const dbHost = process.env.DATABASE_HOST || process.env.MYSQLHOST || process.env.MYSQL_HOST || 'localhost';
@@ -45,7 +46,7 @@ const dbName = process.env.DATABASE_NAME || process.env.MYSQLDATABASE || process
       username: dbUser,
       password: dbPass,
       database: dbName,
-      entities: [User, Aid, AidDistribution, Family, FamilyNeed, Visit, Location, VisitAidStat, CityBoundary, Deposit, DepositStorageStat, ContactMessage],
+      entities: [User, Aid, AidDistribution, Family, FamilyNeed, Visit, Location, VisitAidStat, CityBoundary, Deposit, DepositStorageStat, ContactMessage, News],
       synchronize: true,
     }),
     AuthModule, FamilyModule, UserModule, VisitModule, LocationModule, AidModule, AidDistributionModule, DashboardModule, DepositModule, AiRecommendationModule, ChatbotModule, ContactModule, ScheduleModule.forRoot()],
