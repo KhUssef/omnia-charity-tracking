@@ -298,6 +298,76 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Témoignages */}
+      <section className="py-20 md:py-28 bg-[#FFFBF7]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <div className="text-center max-w-2xl mx-auto mb-16">
+              <span className="text-xs font-semibold tracking-widest uppercase text-brand-600">Ils témoignent</span>
+              <h2 className="mt-3 text-3xl md:text-4xl font-display font-bold text-stone-900">
+                Des vies transformées
+              </h2>
+              <p className="mt-4 text-stone-500 leading-relaxed">
+                Derrière chaque chiffre, il y a des histoires humaines. Voici quelques-unes d'entre elles.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                quote: "Grâce à Omnia, mes enfants ont pu retourner à l'école. Le kit scolaire est arrivé exactement quand on en avait besoin. Je sais d'où vient chaque cahier.",
+                name: 'Fatma B.',
+                role: 'Mère de famille, Tunis',
+                img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80',
+              },
+              {
+                quote: "En tant que donateur, voir mon colis alimentaire arriver chez la famille Ben Ali avec photo et date de livraison, ça change tout. Je donne les yeux fermés maintenant.",
+                name: 'Karim M.',
+                role: 'Donateur régulier, Paris',
+                img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80',
+              },
+              {
+                quote: "Le score de vulnérabilité nous aide à prioriser sans favoritisme. En 6 mois de bénévolat, j'ai vu 40 familles accompagnées avec une dignité que je n'avais jamais vue ailleurs.",
+                name: 'Sarah T.',
+                role: 'Bénévole terrain, Sousse',
+                img: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80',
+              },
+            ].map((t, i) => (
+              <ScrollReveal key={t.name} delay={i * 0.15}>
+                <div className="h-full flex flex-col rounded-2xl bg-white border border-stone-100 p-7 hover:shadow-xl hover:shadow-stone-200/30 transition-all duration-500">
+                  <div className="text-brand-300 font-display text-5xl leading-none mb-4">"</div>
+                  <p className="text-stone-600 leading-relaxed flex-1 italic">{t.quote}</p>
+                  <div className="mt-6 flex items-center gap-3 pt-5 border-t border-stone-100">
+                    <img src={t.img} alt={t.name} className="w-11 h-11 rounded-full object-cover ring-2 ring-brand-100" />
+                    <div>
+                      <p className="font-display font-bold text-stone-900 text-sm">{t.name}</p>
+                      <p className="text-xs text-stone-400">{t.role}</p>
+                    </div>
+                  </div>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+
+          <ScrollReveal delay={0.3}>
+            <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+              {[
+                { value: '95%', label: 'des dons arrivent aux familles' },
+                { value: '48h', label: 'délai moyen de réponse' },
+                { value: '12', label: 'villes couvertes en Tunisie' },
+                { value: '100%', label: 'des distributions tracées' },
+              ].map((s) => (
+                <div key={s.label} className="rounded-2xl bg-white border border-stone-100 p-6">
+                  <p className="text-4xl md:text-5xl font-display font-bold text-brand-600">{s.value}</p>
+                  <p className="mt-2 text-xs md:text-sm text-stone-500 font-medium">{s.label}</p>
+                </div>
+              ))}
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-20 md:py-28 bg-stone-900 relative overflow-hidden">
         <div className="absolute inset-0 opacity-20">

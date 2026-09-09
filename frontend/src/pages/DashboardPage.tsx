@@ -1,168 +1,88 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  Heart,
-  MapPin,
-  TrendingUp,
-  Activity,
-  Calendar,
-  Package,
-} from 'lucide-react';
+import { Heart, MapPin, TrendingUp, Activity } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { api } from '../services/api';
+import { StatCard } from '../components/StatCard';
 import type { DashboardStats } from '../types';
 
-function ScrollReveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
-    >
-      {children}
-    </motion.div>
-  );
-}
+const PIE_COLORS = ['#d97706', '#059669', '#e11d48', '#6366f1', '#0891b2'];
+const AID_LABELS: Record<string, string> = {
+  FOOD: 'Nourriture', MEDICINE: 'Médicaments', FINANCIAL: 'Financier', SOCIAL: 'Social', OTHER: 'Autre',
+};
 
 export function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   useEffect(() => {
-    api.getDashboardStats()
-      .then(setStats)
-      .catch(() => setError('Impossible de charger les statistiques.'))
-      .finally(() => setLoading(false));
+    api.getDashboardStats().then(setStats).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
+  const pieData = stats ? Object.entries(stats.familiesByAidType).map(([type, count]) => ({
+    name: AID_LABELS[type] || type,
+    value: count as number,
+  })) : [];
+
+  const lineData = stats?.monthlyVisits || [];
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
-      <ScrollReveal>
-        <div className="mb-10">
-          <span className="text-xs font-semibold tracking-widest uppercase text-brand-600">Tableau public</span>
-          <h1 className="mt-2 text-3xl md:text-4xl font-display font-bold text-stone-900">Impact en temps réel</h1>
-          <p className="mt-2 text-stone-500 text-sm">Toutes les données sont mises à jour automatiquement et accessibles à tous.</p>
+    <div className="min-h-screen bg-[#FFFBF7]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+          <h1 className="text-4xl md:text-5xl font-display font-bold text-stone-900 mb-2">Notre Impact</h1>
+          <p className="text-lg text-stone-500 mb-10">Transparence totale sur nos actions et résultats.</p>
+        </motion.div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+          <StatCard label="Familles accompagnées" value={stats?.totalFamilies ?? 0} icon={Heart} color="rose" delay={0} />
+          <StatCard label="Visites réalisées" value={stats?.totalVisits ?? 0} icon={MapPin} color="primary" delay={0.1} />
+          <StatCard label="Distributions" value={stats?.totalAidDistributions ?? 0} icon={TrendingUp} color="emerald" delay={0.2} />
+          <StatCard label="Visites actives" value={stats?.activeVisits ?? 0} icon={Activity} color="amber" delay={0.3} />
         </div>
-      </ScrollReveal>
 
-      {error && (
-        <div className="mb-6 rounded-xl bg-rose-50 text-rose-700 px-4 py-3 text-sm border border-rose-200">
-          {error}
+        <div className="grid lg:grid-cols-2 gap-8">
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="bg-white rounded-2xl border border-stone-200 p-6">
+            <h2 className="text-xl font-display font-bold text-stone-900 mb-6">Évolution des visites</h2>
+            {loading ? (
+              <div className="h-64 flex items-center justify-center text-stone-400">Chargement...</div>
+            ) : lineData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={lineData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="#a8a29e" />
+                  <YAxis tick={{ fontSize: 12 }} stroke="#a8a29e" allowDecimals={false} />
+                  <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e7e5e4' }} />
+                  <Line type="monotone" dataKey="count" stroke="#d97706" strokeWidth={3} dot={{ r: 5, fill: '#d97706' }} name="Visites" />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-stone-400">Aucune donnée disponible</div>
+            )}
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="bg-white rounded-2xl border border-stone-200 p-6">
+            <h2 className="text-xl font-display font-bold text-stone-900 mb-6">Répartition par type d'aide</h2>
+            {loading ? (
+              <div className="h-64 flex items-center justify-center text-stone-400">Chargement...</div>
+            ) : pieData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value">
+                    {pieData.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e7e5e4' }} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-stone-400">Aucune donnée disponible</div>
+            )}
+          </motion.div>
         </div>
-      )}
-
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 rounded-2xl bg-stone-100 skeleton" />
-          ))}
-        </div>
-      ) : stats ? (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-12">
-            {[
-              { label: 'Familles accompagnées', value: stats.totalFamilies, icon: Heart, color: 'bg-rose-50 text-rose-600 border-rose-100' },
-              { label: 'Visites réalisées', value: stats.totalVisits, icon: MapPin, color: 'bg-brand-50 text-brand-600 border-brand-100' },
-              { label: 'Distributions', value: stats.totalAidDistributions, icon: TrendingUp, color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
-              { label: 'Visites actives', value: stats.activeVisits, icon: Activity, color: 'bg-amber-50 text-amber-600 border-amber-100' },
-            ].map((c, i) => (
-              <ScrollReveal key={c.label} delay={i * 0.08}>
-                <div className="rounded-2xl bg-white p-6 border border-stone-100 hover:shadow-lg hover:shadow-stone-200/20 hover:border-stone-200 transition-all duration-300">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-stone-500">{c.label}</p>
-                      <p className="mt-3 text-3xl font-display font-bold text-stone-900">
-                        {c.value.toLocaleString('fr-FR')}
-                      </p>
-                    </div>
-                    <div className={`rounded-xl p-2.5 border ${c.color}`}>
-                      <c.icon className="w-5 h-5" />
-                    </div>
-                  </div>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ScrollReveal delay={0.1}>
-              <div className="rounded-2xl bg-white p-6 border border-stone-100">
-                <div className="flex items-center gap-2 mb-6">
-                  <Calendar className="w-4 h-4 text-brand-600" />
-                  <h3 className="font-display font-bold text-lg text-stone-900">Visites mensuelles</h3>
-                </div>
-                {stats.monthlyVisits.length === 0 ? (
-                  <p className="text-sm text-stone-400">Aucune donnée disponible.</p>
-                ) : (
-                  <div className="space-y-3">
-                    {stats.monthlyVisits.map((m) => {
-                      const max = Math.max(...stats.monthlyVisits.map((x) => x.count), 1);
-                      const pct = (m.count / max) * 100;
-                      return (
-                        <div key={m.month} className="flex items-center gap-3">
-                          <span className="w-12 text-xs text-stone-500 font-medium shrink-0">{m.month}</span>
-                          <div className="flex-1 h-7 bg-stone-100 rounded-lg overflow-hidden">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              whileInView={{ width: `${pct}%` }}
-                              viewport={{ once: true }}
-                              transition={{ duration: 0.8, ease: 'easeOut' }}
-                              className="h-full bg-brand-500 rounded-lg"
-                            />
-                          </div>
-                          <span className="w-8 text-xs text-stone-700 font-semibold text-right">{m.count}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </ScrollReveal>
-
-            <ScrollReveal delay={0.2}>
-              <div className="rounded-2xl bg-white p-6 border border-stone-100">
-                <div className="flex items-center gap-2 mb-6">
-                  <Package className="w-4 h-4 text-emerald-600" />
-                  <h3 className="font-display font-bold text-lg text-stone-900">Répartition par type d'aide</h3>
-                </div>
-                {Object.keys(stats.familiesByAidType).length === 0 ? (
-                  <p className="text-sm text-stone-400">Aucune donnée disponible.</p>
-                ) : (
-                  <div className="space-y-3">
-                    {Object.entries(stats.familiesByAidType).map(([type, count]) => {
-                      const max = Math.max(...Object.values(stats.familiesByAidType), 1);
-                      const pct = (count / max) * 100;
-                      const labels: Record<string, string> = {
-                        FOOD: 'Nourriture',
-                        MEDICINE: 'Médicaments',
-                        FINANCIAL: 'Aide financière',
-                        SOCIAL: 'Aide sociale',
-                        OTHER: 'Autre',
-                      };
-                      return (
-                        <div key={type} className="flex items-center gap-3">
-                          <span className="w-28 text-xs text-stone-500 font-medium shrink-0">{labels[type] || type}</span>
-                          <div className="flex-1 h-7 bg-stone-100 rounded-lg overflow-hidden">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              whileInView={{ width: `${pct}%` }}
-                              viewport={{ once: true }}
-                              transition={{ duration: 0.8, ease: 'easeOut' }}
-                              className="h-full bg-emerald-500 rounded-lg"
-                            />
-                          </div>
-                          <span className="w-8 text-xs text-stone-700 font-semibold text-right">{count}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </ScrollReveal>
-          </div>
-        </>
-      ) : null}
+      </div>
     </div>
   );
 }

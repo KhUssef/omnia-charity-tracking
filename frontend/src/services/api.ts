@@ -104,4 +104,18 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ name, email, password }),
     }),
+
+  // Contact
+  sendContactMessage: (data: { name: string; email: string; message: string }) =>
+    fetchJson<{ success: boolean; id: string }>('/contact', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  // Profile
+  changePassword: (oldPassword: string, newPassword: string) =>
+    fetchJson<{ success: boolean }>('/user/me/password', {
+      method: 'PATCH',
+      body: JSON.stringify({ oldPassword, newPassword }),
+    }),
 };

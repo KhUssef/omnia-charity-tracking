@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -26,6 +27,12 @@ export class UserController {
   @Get('me')
   getMe(@ConnectedUser() user: JwtPayload) {
     return this.userService.getCurrentUserProfile(user.sub);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/password')
+  changePassword(@ConnectedUser() user: JwtPayload, @Body() dto: ChangePasswordDto) {
+    return this.userService.changePassword(user.sub, dto.oldPassword, dto.newPassword);
   }
   @UseGuards(JwtAuthGuard)
   @Roles([UserRole.EMPLOYEE])

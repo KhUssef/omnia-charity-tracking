@@ -2,7 +2,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'ADMIN' | 'USER' | 'WORKER';
+  role: 'ADMIN' | 'USER' | 'EMPLOYEE';
   phone?: string;
   isActive?: boolean;
 }
@@ -36,8 +36,8 @@ export interface Visit {
   isActive: boolean;
   isCompleted: boolean;
   notes?: string;
-  family?: Family;
-  user?: User;
+  families?: Family[];
+  users?: User[];
   aidDistributions?: AidDistribution[];
 }
 
@@ -60,7 +60,10 @@ export interface Aid {
 export interface AidDistribution {
   id: string;
   quantity: number;
-  date: string;
+  unit?: string;
+  date?: string;
+  createdAt?: string;
+  notes?: string;
   aid?: Aid;
   visit?: Visit;
   family?: Family;

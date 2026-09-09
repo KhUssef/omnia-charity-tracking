@@ -25,6 +25,9 @@ import { Deposit } from './deposit/entities/deposit.entity';
 import { DepositModule } from './deposit/deposit.module';
 import { DepositStorageStat } from './dashboard/entities/deposit-storage-stat.entity';
 import { AiRecommendationModule } from './ai-recommendation/ai-recommendation.module';
+import { ChatbotModule } from './chatbot/chatbot.module';
+import { ContactModule } from './contact/contact.module';
+import { ContactMessage } from './contact/entities/contact-message.entity';
 
 // Lecture directe de process.env pour Railway (évite tout problème de ConfigModule)
 const dbHost = process.env.DATABASE_HOST || process.env.MYSQLHOST || process.env.MYSQL_HOST || 'localhost';
@@ -42,10 +45,10 @@ const dbName = process.env.DATABASE_NAME || process.env.MYSQLDATABASE || process
       username: dbUser,
       password: dbPass,
       database: dbName,
-      entities: [User, Aid, AidDistribution, Family, FamilyNeed, Visit, Location, VisitAidStat, CityBoundary, Deposit, DepositStorageStat],
+      entities: [User, Aid, AidDistribution, Family, FamilyNeed, Visit, Location, VisitAidStat, CityBoundary, Deposit, DepositStorageStat, ContactMessage],
       synchronize: true,
     }),
-    AuthModule, FamilyModule, UserModule, VisitModule, LocationModule, AidModule, AidDistributionModule, DashboardModule, DepositModule, AiRecommendationModule, ScheduleModule.forRoot()],
+    AuthModule, FamilyModule, UserModule, VisitModule, LocationModule, AidModule, AidDistributionModule, DashboardModule, DepositModule, AiRecommendationModule, ChatbotModule, ContactModule, ScheduleModule.forRoot()],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -54,7 +54,7 @@ export function StatCard({
   }, [started, value, delay]);
 
   const colorMap = {
-    primary: 'bg-primary-50 text-primary-700 ring-primary-200',
+    primary: 'bg-brand-50 text-brand-700 ring-brand-200',
     emerald: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
     amber: 'bg-amber-50 text-amber-700 ring-amber-200',
     rose: 'bg-rose-50 text-rose-700 ring-rose-200',
@@ -63,12 +63,12 @@ export function StatCard({
   return (
     <div
       ref={ref}
-      className="relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 hover:shadow-md transition-shadow"
+      className="relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-stone-200/60 hover:shadow-md transition-shadow"
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-slate-500">{label}</p>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+          <p className="text-sm font-medium text-stone-500">{label}</p>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-stone-900">
             {count.toLocaleString('fr-FR')}
             {suffix}
           </p>

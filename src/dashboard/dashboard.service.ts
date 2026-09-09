@@ -484,4 +484,28 @@ export class DashboardService {
     return `${year}-${month}`;
   }
 
+  async getStats() {
+    const totalFamilies = await this.familyRepo.count();
+    const totalVisits = await this.visitRepo.count();
+    const totalAidDistributions = await this.aidDistributionRepo.count();
+    const activeVisits = await this.visitRepo.count({ where: { isActive: true, isCompleted: false } });
+
+    const monthlyVisits = await this.visitsOverTime(6);
+    const familiesByAidType = await this.aidPie(10);
+    const recentDistributions = await this.aidDistributionRepo.find({
+      relations: ['aid', 'visit', 'visit.families'],
+      order: { createdAt: 'DESC' },
+      take: 10,
+    });
+
+    return {
+      totalFamilies,
+      totalVisits,
+      totalAidDistributions,
+      activeVisits,
+      monthlyVisits: (monthlyVisits || []).map((m: any) => ({ month: m.label || m.month, count: m.count || 0 })),
+      familiesByAidType: Object.fromEntries((familiesByAidType || []).map((a: any) => [a.type || a.label, a.count || a.value || 0])),
+      recentDistributions,
+    };
+  }
 }

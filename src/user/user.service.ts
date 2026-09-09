@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Raw, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -107,7 +107,7 @@ export class UserService {
 
     const visit = await this.visitRepo.findOne({
       where: { id: user.currentVisit.id },
-      relations: ['family', 'aidDistributions'],
+      relations: ['families', 'aidDistributions'],
       select: UserSelectOptions,
     });
     return visit;
@@ -125,5 +125,20 @@ export class UserService {
     }
 
     return profile;
+  }
+
+  async changePassword(userId: string, oldPassword: string, newPassword: string) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+
+    const isValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isValid) throw new BadRequestException('Ancien mot de passe incorrect');
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    user.salt = salt;
+    await this.userRepo.save(user);
+
+    return { success: true };
   }
 }

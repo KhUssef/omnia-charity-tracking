@@ -9,6 +9,12 @@ export class DashboardController {
     private readonly statsService: StatsService,
   ) {}
 
+  // Stats aggregated (for frontend DashboardPage)
+  @Get('stats')
+  getStats() {
+    return this.service.getStats();
+  }
+
   // Heatmaps
   @Get('heatmap/families')
   getFamiliesHeatmap() {

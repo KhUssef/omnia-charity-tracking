@@ -26,9 +26,9 @@ const publicLinks = [
 ];
 
 const protectedLinks = [
-  { to: '/traceability', label: 'Traçabilité', icon: GitBranch, roles: ['ADMIN', 'WORKER', 'USER'] },
-  { to: '/families', label: 'Familles', icon: Users, roles: ['ADMIN', 'WORKER', 'USER'] },
-  { to: '/visits', label: 'Visites', icon: MapPin, roles: ['ADMIN', 'WORKER'] },
+  { to: '/traceability', label: 'Traçabilité', icon: GitBranch, roles: ['ADMIN', 'EMPLOYEE', 'USER'] },
+  { to: '/families', label: 'Familles', icon: Users, roles: ['ADMIN', 'EMPLOYEE', 'USER'] },
+  { to: '/visits', label: 'Visites', icon: MapPin, roles: ['ADMIN', 'EMPLOYEE'] },
 ];
 
 export function Navbar() {
@@ -88,14 +88,16 @@ export function Navbar() {
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 rounded-full bg-stone-100/80 px-3 py-1.5 border border-stone-200/50">
-                  <UserCircle className="w-4 h-4 text-stone-400" />
-                  <span className="text-xs font-medium text-stone-700">{user?.name}</span>
-                  {user?.role === 'ADMIN' && (
-                    <span className="flex items-center gap-0.5 text-[10px] font-bold text-brand-700 bg-brand-100 px-1.5 py-0.5 rounded-full">
-                      <Shield className="w-3 h-3" />
-                      Admin
-                    </span>
-                  )}
+                  <Link to="/profil" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                    <UserCircle className="w-4 h-4 text-stone-400" />
+                    <span className="text-xs font-medium text-stone-700">{user?.name}</span>
+                    {user?.role === 'ADMIN' && (
+                      <span className="flex items-center gap-0.5 text-[10px] font-bold text-brand-700 bg-brand-100 px-1.5 py-0.5 rounded-full">
+                        <Shield className="w-3 h-3" />
+                        Admin
+                      </span>
+                    )}
+                  </Link>
                 </div>
                 <button
                   onClick={handleLogout}
@@ -200,9 +202,8 @@ export function Footer() {
             Transparence totale, impact mesurable.<br className="md:hidden" /> Chaque don mérite d'être suivi.
           </p>
           <div className="flex items-center gap-5 text-xs text-stone-400">
-            <span className="hover:text-stone-600 cursor-pointer transition-colors">Confidentialité</span>
-            <span className="hover:text-stone-600 cursor-pointer transition-colors">Contact</span>
-            <span className="hover:text-stone-600 cursor-pointer transition-colors">Mentions légales</span>
+            <Link to="/contact" className="hover:text-stone-600 transition-colors">Contact</Link>
+            <Link to="/mentions-legales" className="hover:text-stone-600 transition-colors">Mentions légales</Link>
           </div>
         </div>
         <div className="mt-8 pt-6 border-t border-stone-100 text-center">

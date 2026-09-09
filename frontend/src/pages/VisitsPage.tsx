@@ -247,11 +247,11 @@ export function VisitsPage() {
                     {visit.isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-stone-800">Visite chez {visit.family?.lastName || 'Famille inconnue'}</p>
+                    <p className="text-sm font-medium text-stone-800">Visite chez {visit.families?.[0]?.lastName || 'Famille inconnue'}</p>
                     <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-stone-400">
                       <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{new Date(visit.startDate).toLocaleDateString('fr-FR')}</span>
                       <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{new Date(visit.startDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
-                      <span className="flex items-center gap-1"><User className="w-3.5 h-3.5" />{visit.user?.name || 'Non assigné'}</span>
+                      <span className="flex items-center gap-1"><User className="w-3.5 h-3.5" />{visit.users?.[0]?.name || 'Non assigné'}</span>
                     </div>
                     {visit.notes && <p className="mt-2 text-xs text-stone-500 bg-stone-50 rounded-lg p-2 border border-stone-100">{visit.notes}</p>}
                   </div>

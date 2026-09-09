@@ -18,8 +18,10 @@ import {
   Clock,
   TrendingUp,
 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { api } from '../services/api';
-import type { Family, Aid, AidDistribution, Visit, User } from '../types';
+import { StatCard } from '../components/StatCard';
+import type { Family, Aid, AidDistribution, Visit, User, DashboardStats } from '../types';
 
 const tabs = [
   { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
@@ -62,39 +64,58 @@ function Modal({ open, onClose, title, children }: { open: boolean; onClose: () 
 }
 
 function DashboardTab() {
-  const [summary, setSummary] = useState<any>(null);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.getAdminSummary()
-      .then(setSummary)
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    api.getDashboardStats().then(setStats).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
-  const cards = [
-    { label: 'Familles', value: summary?.totalFamilies ?? 0, icon: Users, color: 'bg-brand-50 text-brand-700 border-brand-100' },
-    { label: 'Visites en attente', value: summary?.pendingVisits ?? 0, icon: Clock, color: 'bg-amber-50 text-amber-700 border-amber-100' },
-    { label: 'Visites actives', value: summary?.activeVisits ?? 0, icon: TrendingUp, color: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
-    { label: 'Utilisateurs', value: summary?.totalUsers ?? 0, icon: Shield, color: 'bg-rose-50 text-rose-700 border-rose-100' },
-  ];
+  const monthlyData = stats?.monthlyVisits || [];
+  const aidTypeData = stats ? Object.entries(stats.familiesByAidType).map(([type, count]) => ({
+    name: type === 'FOOD' ? 'Nourriture' : type === 'MEDICINE' ? 'Médicaments' : type === 'FINANCIAL' ? 'Financier' : type === 'SOCIAL' ? 'Social' : 'Autre',
+    value: count as number,
+  })) : [];
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {cards.map((c) => (
-          <div key={c.label} className="rounded-2xl bg-white p-5 border border-stone-100 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm font-medium text-stone-500">{c.label}</p>
-                <p className="mt-2 text-3xl font-display font-bold text-stone-900">{loading ? '—' : c.value}</p>
-              </div>
-              <div className={`rounded-xl p-2.5 border ${c.color}`}>
-                <c.icon className="w-5 h-5" />
-              </div>
-            </div>
-          </div>
-        ))}
+        <StatCard label="Familles" value={stats?.totalFamilies ?? 0} icon={Users} color="primary" delay={0} />
+        <StatCard label="Visites réalisées" value={stats?.totalVisits ?? 0} icon={Clock} color="amber" delay={0.1} />
+        <StatCard label="Distributions" value={stats?.totalAidDistributions ?? 0} icon={TrendingUp} color="emerald" delay={0.2} />
+        <StatCard label="Utilisateurs" value={stats?.activeVisits ?? 0} icon={Shield} color="rose" delay={0.3} />
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="rounded-2xl bg-white p-6 border border-stone-100">
+          <h3 className="font-display font-bold text-stone-800 mb-4">Tendance des visites (6 mois)</h3>
+          {loading ? <div className="h-48 bg-stone-100 skeleton rounded-lg" /> : monthlyData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={monthlyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="#a8a29e" />
+                <YAxis tick={{ fontSize: 11 }} stroke="#a8a29e" allowDecimals={false} />
+                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e7e5e4', fontSize: 12 }} />
+                <Line type="monotone" dataKey="count" stroke="#d97706" strokeWidth={2.5} dot={{ r: 4, fill: '#d97706' }} name="Visites" />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : <p className="text-sm text-stone-400 text-center py-12">Aucune donnée</p>}
+        </div>
+
+        <div className="rounded-2xl bg-white p-6 border border-stone-100">
+          <h3 className="font-display font-bold text-stone-800 mb-4">Répartition par type d'aide</h3>
+          {loading ? <div className="h-48 bg-stone-100 skeleton rounded-lg" /> : aidTypeData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={aidTypeData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#a8a29e" />
+                <YAxis tick={{ fontSize: 11 }} stroke="#a8a29e" allowDecimals={false} />
+                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e7e5e4', fontSize: 12 }} />
+                <Bar dataKey="value" fill="#059669" radius={[6, 6, 0, 0]} name="Quantité" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : <p className="text-sm text-stone-400 text-center py-12">Aucune donnée</p>}
+        </div>
       </div>
 
       <div className="rounded-2xl bg-white p-6 border border-stone-100">
@@ -103,17 +124,21 @@ function DashboardTab() {
           <div className="space-y-2">
             {[...Array(3)].map((_, i) => <div key={i} className="h-10 bg-stone-100 skeleton rounded-lg" />)}
           </div>
-        ) : summary?.recentDistributions?.length === 0 ? (
+        ) : !stats?.recentDistributions?.length ? (
           <p className="text-sm text-stone-400">Aucune distribution récente.</p>
         ) : (
           <div className="divide-y divide-stone-100">
-            {summary?.recentDistributions?.map((d: AidDistribution) => (
+            {stats.recentDistributions.slice(0, 5).map((d: AidDistribution) => (
               <div key={d.id} className="py-3 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-stone-800">{d.aid?.name || 'Aide'}</p>
-                  <p className="text-xs text-stone-400">{d.visit?.family?.lastName ? `Famille ${d.visit.family.lastName}` : '—'} • {d.quantity} unités</p>
+                  <p className="text-xs text-stone-400">
+                    {d.visit?.families?.[0]?.lastName ? `Famille ${d.visit.families[0].lastName}` : '—'} • {d.quantity} {d.unit || 'unités'}
+                  </p>
                 </div>
-                <span className="text-xs text-stone-400">{d.date ? new Date(d.date).toLocaleDateString('fr-FR') : '—'}</span>
+                <span className="text-xs text-stone-400">
+                  {d.createdAt ? new Date(d.createdAt).toLocaleDateString('fr-FR') : '—'}
+                </span>
               </div>
             ))}
           </div>
@@ -486,7 +511,7 @@ function VisitsTab() {
             visits.length === 0 ? <tr><td colSpan={5} className="px-4 py-8 text-center text-stone-400">Aucune visite.</td></tr> :
             visits.map((v) => (
               <tr key={v.id} className="hover:bg-stone-50 transition-colors">
-                <td className="px-4 py-3 font-medium text-stone-800">{v.family?.lastName || '—'}</td>
+                <td className="px-4 py-3 font-medium text-stone-800">{v.families?.[0]?.lastName || '—'}</td>
                 <td className="px-4 py-3 text-stone-500">{new Date(v.startDate).toLocaleDateString('fr-FR')}</td>
                 <td className="px-4 py-3">
                   {v.isCompleted ? <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 px-2 py-0.5 text-[10px] font-semibold border border-emerald-200"><CheckCircle2 className="w-3 h-3" /> Terminée</span> :

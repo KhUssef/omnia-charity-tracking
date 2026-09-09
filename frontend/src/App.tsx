@@ -10,6 +10,9 @@ import { VisitsPage } from './pages/VisitsPage';
 import { ChatbotPage } from './pages/ChatbotPage';
 import { LoginPage } from './pages/LoginPage';
 import { AdminPage } from './pages/AdminPage';
+import { ContactPage } from './pages/ContactPage';
+import { MentionsLegalesPage } from './pages/MentionsLegalesPage';
+import { ProfilePage } from './pages/ProfilePage';
 
 function App() {
   return (
@@ -21,6 +24,8 @@ function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/chatbot" element={<ChatbotPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/mentions-legales" element={<MentionsLegalesPage />} />
             <Route
               path="/traceability"
               element={
@@ -40,7 +45,7 @@ function App() {
             <Route
               path="/visits"
               element={
-                <ProtectedRoute requiredRoles={['ADMIN', 'WORKER']}>
+                <ProtectedRoute requiredRoles={['ADMIN', 'EMPLOYEE']}>
                   <VisitsPage />
                 </ProtectedRoute>
               }
@@ -50,6 +55,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRoles={['ADMIN']}>
                   <AdminPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profil"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
                 </ProtectedRoute>
               }
             />
