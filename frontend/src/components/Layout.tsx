@@ -1,28 +1,18 @@
+import { LayoutDashboard, GitBranch, Users, MapPin, MessageCircle, Menu, X, LogIn, LogOut, Shield, UserCircle, Settings, HeartHandshake } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Heart,
-  LayoutDashboard,
-  GitBranch,
-  Users,
-  MapPin,
-  MessageCircle,
-  Menu,
-  X,
-  LogIn,
-  LogOut,
-  Shield,
-  UserCircle,
-  Settings,
-} from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { BrandLogo } from './BrandLogo';
+import { OMNIA } from '../data/omnia';
+import { PillButton } from './ui/PillButton';
 
 const publicLinks = [
-  { to: '/', label: 'Accueil', icon: Heart },
+  { to: '/', label: 'Accueil', icon: HeartHandshake },
   { to: '/dashboard', label: 'Impact', icon: LayoutDashboard },
-  { to: '/chatbot', label: 'Assistant', icon: MessageCircle },
+  { to: '/#causes', label: 'Causes', icon: Users },
+  { to: '/contact', label: 'Contact', icon: MessageCircle },
 ];
 
 const protectedLinks = [
@@ -36,6 +26,7 @@ export function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user, logout, hasRole } = useAuth();
+  const onHome = location.pathname === '/';
 
   const handleLogout = () => {
     logout();
@@ -50,32 +41,35 @@ export function Navbar() {
     ...(hasRole(['ADMIN']) ? [{ to: '/admin', label: 'Admin', icon: Settings }] : []),
   ];
 
+  const linkClass = (active: boolean) =>
+    active ? 'text-white bg-white/15' : 'text-white/80 hover:text-white hover:bg-white/10';
+
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 border-b border-stone-200/50">
+    <header
+      className={
+        onHome
+          ? 'absolute top-0 left-0 right-0 z-50 border-transparent bg-transparent'
+          : 'sticky top-0 z-50 border-b border-white/10 bg-navy-900/95 backdrop-blur-xl'
+      }
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-brand-700 flex items-center justify-center text-white shadow-lg shadow-brand-700/20 group-hover:scale-105 transition-transform duration-300">
-              <Heart className="w-4 h-4" fill="currentColor" />
-            </div>
-            <span className="font-display font-bold text-xl text-stone-900 tracking-tight">
-              Omnia
-            </span>
+          <Link to="/" className="flex items-center rounded-full px-2 py-1 bg-white">
+            <BrandLogo className="h-8 md:h-9" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-0.5">
             {allLinks.map((link) => {
               const Icon = link.icon;
-              const active = location.pathname === link.to || (link.to !== '/' && location.pathname.startsWith(link.to));
+              const [path, hash] = link.to.split('#');
+              const active = hash
+                ? location.pathname === '/' && location.hash === `#${hash}`
+                : location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
               return (
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                    active
-                      ? 'text-brand-800 bg-brand-50'
-                      : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100'
-                  }`}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium ${linkClass(active)}`}
                 >
                   <Icon className="w-4 h-4" />
                   {link.label}
@@ -85,43 +79,33 @@ export function Navbar() {
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
+            <PillButton to="/contact#don" className="!py-2 !px-4 text-sm">
+              Faire un don
+            </PillButton>
             {isAuthenticated ? (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-full bg-stone-100/80 px-3 py-1.5 border border-stone-200/50">
-                  <Link to="/profil" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                    <UserCircle className="w-4 h-4 text-stone-400" />
-                    <span className="text-xs font-medium text-stone-700">{user?.name}</span>
-                    {user?.role === 'ADMIN' && (
-                      <span className="flex items-center gap-0.5 text-[10px] font-bold text-brand-700 bg-brand-100 px-1.5 py-0.5 rounded-full">
-                        <Shield className="w-3 h-3" />
-                        Admin
-                      </span>
-                    )}
-                  </Link>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="p-2 rounded-full text-stone-400 hover:text-rose-600 hover:bg-rose-50 transition-all duration-200"
-                  title="Déconnexion"
-                >
+              <div className="flex items-center gap-2">
+                <Link to="/profil" className="flex items-center gap-2 rounded-full px-3 py-1.5 bg-white/15 text-white">
+                  <UserCircle className="w-4 h-4 text-white/80" />
+                  <span className="text-xs font-medium text-white">{user?.name}</span>
+                  {user?.role === 'ADMIN' && (
+                    <span className="flex items-center gap-0.5 text-[10px] font-bold text-navy-900 bg-gold-400 px-1.5 py-0.5 rounded-full">
+                      <Shield className="w-3 h-3" /> Admin
+                    </span>
+                  )}
+                </Link>
+                <button onClick={handleLogout} className="p-2 rounded-full text-white/80 hover:bg-white/10">
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <Link
-                to="/login"
-                className="inline-flex items-center gap-1.5 rounded-full bg-brand-700 px-5 py-2 text-sm font-medium text-white hover:bg-brand-800 hover:shadow-lg hover:shadow-brand-700/20 transition-all duration-200"
-              >
+              <Link to="/login" className="btn-outline-white !py-2 !px-4 text-sm">
                 <LogIn className="w-3.5 h-3.5" />
                 Connexion
               </Link>
             )}
           </div>
 
-          <button
-            className="md:hidden p-2 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
+          <button className="md:hidden p-2 rounded-lg text-white hover:bg-white/10" onClick={() => setMobileOpen(!mobileOpen)}>
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
@@ -133,47 +117,47 @@ export function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-stone-200/50 bg-white/95 backdrop-blur-xl overflow-hidden"
+            className="md:hidden overflow-hidden border-t border-white/10 bg-navy-900 text-white"
           >
             <div className="px-4 py-3 space-y-1">
               {allLinks.map((link) => {
                 const Icon = link.icon;
-                const active = location.pathname === link.to || (link.to !== '/' && location.pathname.startsWith(link.to));
                 return (
                   <Link
                     key={link.to}
                     to={link.to}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                      active
-                        ? 'text-brand-800 bg-brand-50'
-                        : 'text-stone-600 hover:bg-stone-50'
-                    }`}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/90 hover:bg-white/10"
                   >
                     <Icon className="w-4 h-4" />
                     {link.label}
                   </Link>
                 );
               })}
+              <Link
+                to="/contact#don"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-navy-900 bg-gold-400"
+              >
+                Faire un don
+              </Link>
               {isAuthenticated ? (
                 <button
                   onClick={() => {
                     setMobileOpen(false);
                     handleLogout();
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white"
                 >
-                  <LogOut className="w-4 h-4" />
-                  Déconnexion
+                  <LogOut className="w-4 h-4" /> Déconnexion
                 </button>
               ) : (
                 <Link
                   to="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-brand-800 bg-brand-50"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white"
                 >
-                  <LogIn className="w-4 h-4" />
-                  Connexion
+                  <LogIn className="w-4 h-4" /> Connexion
                 </Link>
               )}
             </div>
@@ -186,31 +170,32 @@ export function Navbar() {
 
 export function Footer() {
   return (
-    <footer className="border-t border-stone-200/50 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-brand-700 flex items-center justify-center text-white">
-              <Heart className="w-4 h-4" fill="currentColor" />
-            </div>
-            <div>
-              <span className="font-display font-bold text-base text-stone-900">Omnia</span>
-              <p className="text-[10px] text-stone-400 -mt-0.5">Association caritative</p>
-            </div>
+    <footer className="bg-navy-900 text-on-navy-muted">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid md:grid-cols-3 gap-8 items-start">
+          <div>
+            <span className="inline-block rounded-full bg-white px-2 py-1 mb-3">
+              <BrandLogo className="h-9" />
+            </span>
+            <p className="text-sm leading-relaxed">
+              Association humanitaire tunisienne. Une bouffée d’espoir, une étincelle de lumière.
+            </p>
           </div>
-          <p className="text-xs text-stone-400 text-center leading-relaxed">
-            Transparence totale, impact mesurable.<br className="md:hidden" /> Chaque don mérite d'être suivi.
-          </p>
-          <div className="flex items-center gap-5 text-xs text-stone-400">
-            <Link to="/contact" className="hover:text-stone-600 transition-colors">Contact</Link>
-            <Link to="/mentions-legales" className="hover:text-stone-600 transition-colors">Mentions légales</Link>
+          <div className="text-sm space-y-1">
+            <p>{OMNIA.address}</p>
+            <p>{OMNIA.phone}</p>
+            <p>{OMNIA.email}</p>
+            <p className="font-mono text-xs">JORT {OMNIA.jort}</p>
+          </div>
+          <div className="flex md:justify-end gap-5 text-sm">
+            <Link to="/contact" className="hover:text-gold-400">Contact</Link>
+            <Link to="/#partenaires" className="hover:text-gold-400">Partenaires</Link>
+            <Link to="/mentions-legales" className="hover:text-gold-400">Mentions légales</Link>
           </div>
         </div>
-        <div className="mt-8 pt-6 border-t border-stone-100 text-center">
-          <p className="text-[10px] text-stone-300">
-            © {new Date().getFullYear()} Omnia Association. Tous droits réservés.
-          </p>
-        </div>
+        <p className="mt-8 pt-6 border-t border-white/10 text-[11px] text-center">
+          © {new Date().getFullYear()} Association Omnia. Tous droits réservés.
+        </p>
       </div>
     </footer>
   );
@@ -218,14 +203,10 @@ export function Footer() {
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col bg-[#FFFBF7]">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4 }}
-        >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
           {children}
         </motion.div>
       </main>

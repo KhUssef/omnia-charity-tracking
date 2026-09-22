@@ -89,6 +89,7 @@ export class AuthService {
 
 		return {
 			accessToken,
+			access_token: accessToken,
 			refreshToken,
 			user: {
 				id: savedUser.id,
@@ -100,8 +101,8 @@ export class AuthService {
 	}
 
 	async validateUser(email: string, password: string): Promise<User> {
-		const user = await this.userRepository.findOne({ where: { email } });
-		if (!user) {
+		const user = await this.userRepository.findOne({ where: { email: email.trim().toLowerCase() } });
+		if (!user || !user.password) {
 			throw new UnauthorizedException('Invalid credentials');
 		}
 
@@ -119,6 +120,7 @@ export class AuthService {
 
 		return {
 			accessToken,
+			access_token: accessToken,
 			refreshToken,
 			user: {
 				id: user.id,

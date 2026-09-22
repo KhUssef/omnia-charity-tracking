@@ -18,22 +18,30 @@ export class AidService {
   ) {}
 
   async create(dto: CreateAidDto) {
-    const deposit = await this.getDeposit(dto.depositId);
+    const name = dto.name?.trim();
+    if (!name) {
+      throw new BadRequestException("Le nom de l'aide est obligatoire");
+    }
+    const quantity = dto.quantity && dto.quantity > 0 ? dto.quantity : 1;
+    const deposit = await this.resolveDeposit(dto.depositId, quantity);
     this.ensureDepositSupportsConstraints(deposit, dto);
+    if (deposit.currentQuantity + quantity > deposit.capacity) {
+      deposit.capacity = deposit.currentQuantity + quantity;
+    }
     const aid = this.aidRepo.create({
-      name: dto.name,
+      name,
       type: dto.type,
-      description: dto.description,
-      quantity: dto.quantity,
+      description: dto.description?.trim() || undefined,
+      quantity,
       deposit,
       requiresRefrigeration: dto.requiresRefrigeration ?? false,
-      requiredHumidityLevel: dto.requiredHumidityLevel ?? null,
-      requiredMinTemperatureC: dto.requiredMinTemperatureC ?? null,
-      requiredMaxTemperatureC: dto.requiredMaxTemperatureC ?? null,
+      requiredHumidityLevel: dto.requiredHumidityLevel ?? undefined,
+      requiredMinTemperatureC: dto.requiredMinTemperatureC ?? undefined,
+      requiredMaxTemperatureC: dto.requiredMaxTemperatureC ?? undefined,
     });
 
     const saved = await this.aidRepo.save(aid);
-    await this.applyDepositDelta(deposit, dto.quantity);
+    await this.applyDepositDelta(deposit, quantity);
     await this.refreshDepositStats([deposit.id]);
     return this.findOne(saved.id);
   }
@@ -42,13 +50,13 @@ export class AidService {
     const qb = this.aidRepo
       .createQueryBuilder('aid')
       .leftJoinAndSelect('aid.deposit', 'deposit')
-      .select(['aid.id', 'aid.name', 'aid.type', 'aid.quantity', 'deposit.id', 'deposit.name']);
+      .select(['aid.id', 'aid.name', 'aid.type', 'aid.quantity', 'aid.description', 'aid.createdAt', 'deposit.id', 'deposit.name']);
 
     if (search) {
       qb.where('aid.name LIKE :search', { search: `%${search}%` });
     }
 
-    return qb.orderBy('aid.name', 'ASC').take(25).getMany();
+    return qb.orderBy('aid.createdAt', 'DESC').take(100).getMany();
   }
 
   async findOne(id: string) {
@@ -138,6 +146,29 @@ export class AidService {
     await this.aidRepo.softRemove(aid);
     await this.refreshDepositStats(touched);
     return { success: true };
+  }
+
+  private async resolveDeposit(depositId: string | undefined, quantity: number) {
+    if (depositId) {
+      return this.getDeposit(depositId);
+    }
+    const deposits = await this.depositRepo.find({ order: { name: 'ASC' } });
+    const withSpace = deposits.find((d) => d.currentQuantity + quantity <= d.capacity);
+    if (withSpace) {
+      return withSpace;
+    }
+    if (deposits[0]) {
+      return deposits[0];
+    }
+    return this.depositRepo.save(
+      this.depositRepo.create({
+        name: 'Entrepôt principal',
+        city: 'Tunis',
+        capacity: Math.max(1000, quantity),
+        currentQuantity: 0,
+        humidityLevel: HumidityLevel.MEDIUM,
+      }),
+    );
   }
 
   private async getDeposit(id: string) {

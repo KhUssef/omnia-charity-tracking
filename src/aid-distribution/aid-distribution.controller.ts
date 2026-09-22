@@ -14,14 +14,20 @@ import { UserRole } from '../user/entities/user.entity';
 export class AidDistributionController {
   constructor(private readonly aidDistributionService: AidDistributionService) {}
 
-  // Create a distribution for the current user's active visit
+  // Create a distribution: admin assigns to a family, employee uses current visit
   @Post()
-  @Roles([UserRole.EMPLOYEE])
-  createForCurrentVisit(
+  @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])
+  create(
     @ConnectedUser() user: JwtPayload,
     @Body() createAidDistributionDto: CreateAidDistributionDto,
   ) {
-    return this.aidDistributionService.createForCurrentVisit(user.sub, createAidDistributionDto);
+    return this.aidDistributionService.create(user.sub, createAidDistributionDto);
+  }
+
+  @Get()
+  @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])
+  findAll() {
+    return this.aidDistributionService.findAll();
   }
 
   // List distributions for the current user's active visit

@@ -55,23 +55,24 @@ export function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#FFFBF7] flex items-center justify-center">
-        <p className="text-stone-600">Vous devez être connecté pour accéder à cette page.</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-ink-600">Vous devez être connecté pour accéder à cette page.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFBF7]">
+    <div className="page-shell">
       <div className="max-w-3xl mx-auto px-4 py-16">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <h1 className="text-4xl md:text-5xl font-display font-bold text-stone-900 mb-4">Mon Profil</h1>
-          <p className="text-stone-600 mb-12">Consultez vos informations et gérez votre compte.</p>
+          <p className="eyebrow mb-3">Compte</p>
+          <h1 className="text-4xl md:text-6xl font-display font-bold text-ink-900 mb-4">Mon Profil</h1>
+          <p className="text-ink-500 mb-12">Consultez vos informations et gérez votre compte.</p>
         </motion.div>
 
         <div className="space-y-8">
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="bg-white rounded-2xl border border-stone-200 p-6 md:p-8">
-            <h2 className="text-2xl font-display font-bold text-stone-900 mb-6 flex items-center gap-2"><User className="w-6 h-6 text-brand-600" />Informations personnelles</h2>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="surface-card rounded-3xl p-6 md:p-8">
+            <h2 className="text-2xl font-display font-bold text-ink-900 mb-6 flex items-center gap-2"><User className="w-6 h-6 text-brand-600" />Informations personnelles</h2>
             <div className="space-y-4">
               <div className="flex items-center gap-3 p-4 bg-stone-50 rounded-xl">
                 <User className="w-5 h-5 text-stone-400 flex-shrink-0" />
@@ -93,7 +94,7 @@ export function ProfilePage() {
             </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="bg-white rounded-2xl border border-stone-200 p-6 md:p-8">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="surface-card rounded-3xl p-6 md:p-8">
             <h2 className="text-2xl font-display font-bold text-stone-900 mb-6 flex items-center gap-2"><Lock className="w-6 h-6 text-brand-600" />Changer le mot de passe</h2>
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div>

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { CreateFamilyDto } from './dto/create-family.dto';
@@ -28,9 +28,25 @@ export class FamilyService {
   ) {}
 
   async create(createFamilyDto: CreateFamilyDto) {
-    const { latitude, longitude, ...familyData } = createFamilyDto;
+    const lastName = createFamilyDto.lastName?.trim();
+    const address = createFamilyDto.address?.trim();
+    if (!lastName || !address) {
+      throw new BadRequestException('Le nom de famille et l\'adresse sont obligatoires');
+    }
 
-    const family = this.familyRepo.create(familyData);
+    const parsedMembers = Number.parseInt(String(createFamilyDto.numberOfMembers ?? 1), 10);
+    const { latitude, longitude } = createFamilyDto;
+
+    const family = this.familyRepo.create({
+      lastName,
+      address,
+      phone: createFamilyDto.phone?.trim() || undefined,
+      numberOfMembers: Number.isFinite(parsedMembers) && parsedMembers >= 1 ? parsedMembers : 1,
+      containsDisabledMember: !!createFamilyDto.containsDisabledMember,
+      containsElderlyMember: !!createFamilyDto.containsElderlyMember,
+      containspupilMember: !!createFamilyDto.containspupilMember,
+      notes: createFamilyDto.notes?.trim() || undefined,
+    });
     const saved = await this.familyRepo.save(family);
 
     if (typeof latitude === 'number' && typeof longitude === 'number') {
@@ -53,10 +69,32 @@ export class FamilyService {
     });
   }
 
-  async findAll() {
-    return this.familyRepo.find({
-      select: FamilySelectOptions,
-    });
+  async findAll(search?: string, page = 1, limit = 50) {
+    const take = Math.min(Math.max(Number(limit) || 50, 1), 100);
+    const currentPage = Math.max(Number(page) || 1, 1);
+    const qb = this.familyRepo
+      .createQueryBuilder('family')
+      .leftJoinAndSelect('family.location', 'location')
+      .orderBy('family.lastName', 'ASC')
+      .skip((currentPage - 1) * take)
+      .take(take);
+
+    const term = search?.trim();
+    if (term) {
+      qb.where(
+        'family.lastName LIKE :q OR family.phone LIKE :q OR family.address LIKE :q',
+        { q: `%${term}%` },
+      );
+    }
+
+    const [data, total] = await qb.getManyAndCount();
+    return {
+      data,
+      total,
+      page: currentPage,
+      limit: take,
+      totalPages: Math.max(1, Math.ceil(total / take)),
+    };
   }
 
   async findOne(id: string) {

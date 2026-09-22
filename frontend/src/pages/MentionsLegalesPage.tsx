@@ -2,23 +2,23 @@ import { motion } from 'framer-motion';
 
 export function MentionsLegalesPage() {
   return (
-    <div className="min-h-screen bg-[#FFFBF7]">
+    <div className="page-shell section-sky">
       <div className="max-w-4xl mx-auto px-4 py-16">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <h1 className="text-4xl md:text-5xl font-display font-bold text-stone-900 mb-4">Mentions Légales</h1>
+          <p className="eyebrow mb-3">Légal</p>
+          <h1 className="text-4xl md:text-6xl font-display font-bold text-navy-900 mb-4">Mentions Légales</h1>
           <p className="text-stone-600 mb-12">Dernière mise à jour : Septembre 2026</p>
         </motion.div>
 
         <div className="space-y-10">
           <Section title="1. Éditeur du site" content={[
-            { label: 'Association', value: 'Omnia Association' },
+            { label: 'Association', value: 'Association Omnia' },
             { label: 'Forme juridique', value: 'Association à but non lucratif, régie par le décret-loi n° 2011-88 du 24 septembre 2011' },
-            { label: 'Siège social', value: '123 Avenue Habib Bourguiba, 1000 Tunis, Tunisie' },
-            { label: 'Téléphone', value: '+216 71 123 456' },
-            { label: 'Email', value: 'contact@omnia.org' },
-            { label: 'Matricule fiscal', value: '[À compléter]' },
-            { label: 'Registre des associations', value: '[À compléter]' },
-            { label: 'Directeur de la publication', value: '[Nom du président/directeur]' },
+            { label: 'Siège social', value: '16 rue Palestine, 1002 Lafayette, Tunis, Tunisie' },
+            { label: 'Téléphone', value: '(+216) 98 534 849' },
+            { label: 'Email', value: 'omniatn.charity@gmail.com' },
+            { label: 'JORT', value: '2019401265APSF1' },
+            { label: 'Site historique', value: 'https://omniatn.org/' },
           ]} />
 
           <Section title="2. Hébergement" content={[

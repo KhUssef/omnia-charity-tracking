@@ -8,6 +8,7 @@ import { Visit } from '../visit/entities/visit.entity';
 import { User, UserRole } from '../user/entities/user.entity';
 import { Aid } from '../aid/entities/aid.entity';
 import { Deposit } from '../deposit/entities/deposit.entity';
+import { Family } from '../family/entities/family.entity';
 import { StatsService } from '../dashboard/stats.service';
 
 @Injectable()
@@ -23,6 +24,8 @@ export class AidDistributionService {
     private readonly aidRepo: Repository<Aid>,
     @InjectRepository(Deposit)
     private readonly depositRepo: Repository<Deposit>,
+    @InjectRepository(Family)
+    private readonly familyRepo: Repository<Family>,
     private readonly statsService: StatsService,
   ) {}
 
@@ -34,6 +37,63 @@ export class AidDistributionService {
     if (!user) throw new NotFoundException('User not found');
     if (!user.currentVisit) throw new BadRequestException('User has no current visit');
     return { user, visit: user.currentVisit };
+  }
+
+  async create(userId: string, dto: CreateAidDistributionDto) {
+    if (dto.familyId) {
+      return this.assignToFamily(dto);
+    }
+    return this.createForCurrentVisit(userId, dto);
+  }
+
+  async assignToFamily(dto: CreateAidDistributionDto) {
+    if (!dto.familyId) {
+      throw new BadRequestException('familyId is required');
+    }
+    const quantity = dto.quantity ?? 1;
+    if (quantity <= 0) {
+      throw new BadRequestException('Quantity must be positive');
+    }
+
+    const { distributionId, touchedDepositIds } = await this.adRepo.manager.transaction(async (manager) => {
+      const adRepo = manager.getRepository(AidDistribution);
+      const aidRepo = manager.getRepository(Aid);
+      const familyRepo = manager.getRepository(Family);
+      const depositRepo = manager.getRepository(Deposit);
+
+      const family = await familyRepo.findOne({ where: { id: dto.familyId } });
+      if (!family) {
+        throw new NotFoundException('Family not found');
+      }
+
+      const aid = await aidRepo.findOne({ where: { id: dto.aidId }, relations: ['deposit'] });
+      if (!aid) throw new NotFoundException('Aid not found');
+      const deposit = this.ensureAidHasDeposit(aid);
+      this.validateDepositSupportsAid(aid, deposit);
+      this.ensureStockAvailability(aid, deposit, quantity);
+
+      aid.quantity -= quantity;
+      await aidRepo.save(aid);
+
+      deposit.currentQuantity -= quantity;
+      await depositRepo.save(deposit);
+
+      const ad = adRepo.create({
+        visit: null,
+        family,
+        quantity,
+        unit: dto.unit ?? null,
+        notes: dto.notes ?? null,
+        aid,
+        sourceDeposit: deposit,
+      } as Partial<AidDistribution>);
+
+      const saved = await adRepo.save(ad);
+      return { distributionId: saved.id, touchedDepositIds: [deposit.id] };
+    });
+
+    await this.refreshDepositStats(touchedDepositIds);
+    return this.findOne(distributionId);
   }
 
   async createForCurrentVisit(userId: string, dto: CreateAidDistributionDto) {
@@ -95,10 +155,18 @@ export class AidDistributionService {
     const ad = await this.adRepo.findOne({
       where: { id },
       select: AidDistributionSelectOptions,
-      relations: ['visit', 'aid', 'sourceDeposit'],
+      relations: ['visit', 'aid', 'sourceDeposit', 'family'],
     });
     if (!ad) throw new NotFoundException('Aid distribution not found');
     return ad;
+  }
+
+  async findAll() {
+    return this.adRepo.find({
+      relations: ['aid', 'family', 'visit', 'sourceDeposit'],
+      order: { createdAt: 'DESC' },
+      take: 80,
+    });
   }
 
   async findByVisit(visitId: string) {
@@ -183,7 +251,7 @@ export class AidDistributionService {
 
       const saved = await adRepo.save(ad);
 
-      if (ad.visit.isCompleted) {
+      if (ad.visit?.isCompleted) {
         ad.visit.statsComputed = false;
         await visitRepo.save(ad.visit);
       }
@@ -215,7 +283,7 @@ export class AidDistributionService {
 
       await adRepo.softDelete(id);
 
-      if (ad.visit.isCompleted) {
+      if (ad.visit?.isCompleted) {
         ad.visit.statsComputed = false;
         await visitRepo.save(ad.visit);
       }

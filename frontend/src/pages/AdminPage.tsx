@@ -16,7 +16,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock,
-  TrendingUp,
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { api } from '../services/api';
@@ -79,11 +78,11 @@ function DashboardTab() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard label="Familles" value={stats?.totalFamilies ?? 0} icon={Users} color="primary" delay={0} />
-        <StatCard label="Visites réalisées" value={stats?.totalVisits ?? 0} icon={Clock} color="amber" delay={0.1} />
-        <StatCard label="Distributions" value={stats?.totalAidDistributions ?? 0} icon={TrendingUp} color="emerald" delay={0.2} />
-        <StatCard label="Utilisateurs" value={stats?.activeVisits ?? 0} icon={Shield} color="rose" delay={0.3} />
+      <div className="rounded-[2rem] section-navy p-5 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Familles" value={stats?.totalFamilies ?? 0} />
+        <StatCard label="Visites réalisées" value={stats?.totalVisits ?? 0} />
+        <StatCard label="Distributions" value={stats?.totalAidDistributions ?? 0} />
+        <StatCard label="Utilisateurs" value={stats?.activeVisits ?? 0} />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -182,10 +181,22 @@ function FamiliesTab() {
 
   const submit = async () => {
     try {
-      if (editing) await api.updateFamily(editing.id, form);
-      else await api.createFamily(form);
+      const payload = {
+        lastName: form.lastName?.trim() || '',
+        address: form.address?.trim() || '',
+        phone: form.phone?.trim() || undefined,
+        numberOfMembers: form.numberOfMembers || 1,
+        containsDisabledMember: !!form.containsDisabledMember,
+        containsElderlyMember: !!form.containsElderlyMember,
+        containspupilMember: !!form.containspupilMember,
+        notes: form.notes?.trim() || undefined,
+      };
+      if (editing) await api.updateFamily(editing.id, payload);
+      else await api.createFamily(payload);
       setModalOpen(false);
-      load();
+      setSearch(payload.lastName);
+      setPage(1);
+      await load();
     } catch (e: any) { alert(e.message); }
   };
 
@@ -311,39 +322,71 @@ function FamiliesTab() {
 function AidsTab() {
   const [aids, setAids] = useState<Aid[]>([]);
   const [distributions, setDistributions] = useState<AidDistribution[]>([]);
+  const [families, setFamilies] = useState<Family[]>([]);
+  const [deposits, setDeposits] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [aidModal, setAidModal] = useState(false);
   const [distModal, setDistModal] = useState(false);
   const [editingAid, setEditingAid] = useState<Aid | null>(null);
-  const [aidForm, setAidForm] = useState<Partial<Aid>>({});
-  const [distForm, setDistForm] = useState<Partial<AidDistribution>>({});
+  const [aidForm, setAidForm] = useState<Partial<Aid> & { depositId?: string }>({});
+  const [distForm, setDistForm] = useState<{ aidId?: string; familyId?: string; quantity?: number }>({});
 
   const load = async () => {
     setLoading(true);
     try {
-      const [a, d] = await Promise.all([api.getAids(), api.getAidDistributions()]);
-      setAids(a);
-      setDistributions(d);
+      const [a, d, f, dep] = await Promise.all([
+        api.getAids(),
+        api.getAidDistributions().catch(() => [] as AidDistribution[]),
+        api.getFamilies('', 1, 100).then((res) => res.data).catch(() => [] as Family[]),
+        api.getDeposits().catch(() => [] as { id: string; name: string }[]),
+      ]);
+      setAids(Array.isArray(a) ? a : []);
+      setDistributions(Array.isArray(d) ? d : []);
+      setFamilies(f);
+      setDeposits(dep);
     } catch { /* ignore */ }
     finally { setLoading(false); }
   };
 
   useEffect(() => { load(); }, []);
 
+  const openAssign = (aid?: Aid) => {
+    setDistForm({ aidId: aid?.id || '', familyId: '', quantity: 1 });
+    setDistModal(true);
+  };
+
   const submitAid = async () => {
     try {
-      if (editingAid) await api.updateAid(editingAid.id, aidForm);
-      else await api.createAid(aidForm);
+      if (editingAid) {
+        await api.updateAid(editingAid.id, aidForm);
+        setAidModal(false);
+        await load();
+        return;
+      }
+      const created = await api.createAid({
+        name: aidForm.name,
+        type: aidForm.type || 'FOOD',
+        description: aidForm.description,
+        quantity: aidForm.quantity || 1,
+        depositId: aidForm.depositId,
+      });
       setAidModal(false);
-      load();
+      await load();
+      openAssign(created);
     } catch (e: any) { alert(e.message); }
   };
 
   const submitDist = async () => {
     try {
-      await api.createAidDistribution(distForm);
+      if (!distForm.aidId) throw new Error('Choisis une aide');
+      if (!distForm.familyId) throw new Error('Choisis une famille');
+      await api.createAidDistribution({
+        aidId: distForm.aidId,
+        familyId: distForm.familyId,
+        quantity: distForm.quantity || 1,
+      });
       setDistModal(false);
-      load();
+      await load();
     } catch (e: any) { alert(e.message); }
   };
 
@@ -357,7 +400,7 @@ function AidsTab() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="font-display font-bold text-stone-800">Aides disponibles</h3>
-        <button onClick={() => { setEditingAid(null); setAidForm({}); setAidModal(true); }} className="inline-flex items-center gap-2 rounded-full bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800 transition-colors shadow-lg shadow-brand-700/10">
+        <button onClick={() => { setEditingAid(null); setAidForm({ type: 'FOOD', quantity: 1 }); setAidModal(true); }} className="inline-flex items-center gap-2 rounded-full bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800 transition-colors shadow-lg shadow-brand-700/10">
           <Plus className="w-4 h-4" /> Nouvelle aide
         </button>
       </div>
@@ -367,23 +410,26 @@ function AidsTab() {
             <tr>
               <th className="text-left font-semibold text-stone-700 px-4 py-3">Nom</th>
               <th className="text-left font-semibold text-stone-700 px-4 py-3">Type</th>
+              <th className="text-left font-semibold text-stone-700 px-4 py-3">Stock</th>
               <th className="text-left font-semibold text-stone-700 px-4 py-3">Description</th>
               <th className="text-right font-semibold text-stone-700 px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
-            {loading ? [...Array(3)].map((_, i) => <tr key={i}><td colSpan={4} className="px-4 py-3"><div className="h-6 bg-stone-100 skeleton rounded" /></td></tr>) :
-            aids.length === 0 ? <tr><td colSpan={4} className="px-4 py-8 text-center text-stone-400">Aucune aide.</td></tr> :
+            {loading ? [...Array(3)].map((_, i) => <tr key={i}><td colSpan={5} className="px-4 py-3"><div className="h-6 bg-stone-100 skeleton rounded" /></td></tr>) :
+            aids.length === 0 ? <tr><td colSpan={5} className="px-4 py-8 text-center text-stone-400">Aucune aide.</td></tr> :
             aids.map((a) => (
               <tr key={a.id} className="hover:bg-stone-50 transition-colors">
                 <td className="px-4 py-3 font-medium text-stone-800">{a.name}</td>
                 <td className="px-4 py-3">
                   <span className="inline-flex items-center rounded-full bg-brand-50 text-brand-700 px-2 py-0.5 text-[10px] font-semibold border border-brand-100">{a.type}</span>
                 </td>
+                <td className="px-4 py-3 text-stone-500">{a.quantity ?? 0}</td>
                 <td className="px-4 py-3 text-stone-500">{a.description || '—'}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <button onClick={() => { setEditingAid(a); setAidForm({ ...a }); setAidModal(true); }} className="p-1.5 rounded-lg text-stone-400 hover:text-brand-600 hover:bg-brand-50"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => openAssign(a)} className="px-2 py-1 rounded-lg text-[11px] font-semibold text-emerald-700 hover:bg-emerald-50">Attribuer</button>
+                    <button onClick={() => { setEditingAid(a); setAidForm({ ...a, depositId: a.deposit?.id }); setAidModal(true); }} className="p-1.5 rounded-lg text-stone-400 hover:text-brand-600 hover:bg-brand-50"><Pencil className="w-4 h-4" /></button>
                     <button onClick={() => removeAid(a.id)} className="p-1.5 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </td>
@@ -395,7 +441,7 @@ function AidsTab() {
 
       <div className="flex items-center justify-between">
         <h3 className="font-display font-bold text-stone-800">Distributions</h3>
-        <button onClick={() => { setDistForm({}); setDistModal(true); }} className="inline-flex items-center gap-2 rounded-full bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 transition-colors shadow-lg shadow-emerald-700/10">
+        <button onClick={() => openAssign()} className="inline-flex items-center gap-2 rounded-full bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 transition-colors shadow-lg shadow-emerald-700/10">
           <Plus className="w-4 h-4" /> Nouvelle distribution
         </button>
       </div>
@@ -404,17 +450,20 @@ function AidsTab() {
           <thead className="bg-stone-50 border-b border-stone-100">
             <tr>
               <th className="text-left font-semibold text-stone-700 px-4 py-3">Aide</th>
+              <th className="text-left font-semibold text-stone-700 px-4 py-3">Famille</th>
               <th className="text-left font-semibold text-stone-700 px-4 py-3">Quantité</th>
               <th className="text-left font-semibold text-stone-700 px-4 py-3">Date</th>
               <th className="text-right font-semibold text-stone-700 px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
-            {distributions.map((d) => (
+            {distributions.length === 0 ? <tr><td colSpan={5} className="px-4 py-8 text-center text-stone-400">Aucune distribution.</td></tr> :
+            distributions.map((d) => (
               <tr key={d.id} className="hover:bg-stone-50 transition-colors">
                 <td className="px-4 py-3 font-medium text-stone-800">{d.aid?.name || '—'}</td>
+                <td className="px-4 py-3 text-stone-500">{d.family?.lastName ? `Famille ${d.family.lastName}` : '—'}</td>
                 <td className="px-4 py-3 text-stone-500">{d.quantity}</td>
-                <td className="px-4 py-3 text-stone-500">{d.date ? new Date(d.date).toLocaleDateString('fr-FR') : '—'}</td>
+                <td className="px-4 py-3 text-stone-500">{d.createdAt ? new Date(d.createdAt).toLocaleDateString('fr-FR') : '—'}</td>
                 <td className="px-4 py-3 text-right">
                   <button onClick={async () => { if (confirm('Supprimer ?')) { await api.deleteAidDistribution(d.id); load(); } }} className="p-1.5 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50"><Trash2 className="w-4 h-4" /></button>
                 </td>
@@ -428,7 +477,7 @@ function AidsTab() {
         <div className="space-y-4">
           <div><label className="block text-xs font-medium text-stone-600 mb-1">Nom</label><input value={aidForm.name || ''} onChange={(e) => setAidForm({ ...aidForm, name: e.target.value })} className="w-full rounded-xl bg-stone-50 px-3 py-2 text-sm border border-stone-200 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100" /></div>
           <div><label className="block text-xs font-medium text-stone-600 mb-1">Type</label>
-            <select value={aidForm.type || 'FOOD'} onChange={(e) => setAidForm({ ...aidForm, type: e.target.value as any })} className="w-full rounded-xl bg-stone-50 px-3 py-2 text-sm border border-stone-200 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100">
+            <select value={aidForm.type || 'FOOD'} onChange={(e) => setAidForm({ ...aidForm, type: e.target.value as Aid['type'] })} className="w-full rounded-xl bg-stone-50 px-3 py-2 text-sm border border-stone-200 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100">
               <option value="FOOD">Nourriture</option>
               <option value="MEDICINE">Médicaments</option>
               <option value="FINANCIAL">Financier</option>
@@ -436,21 +485,40 @@ function AidsTab() {
               <option value="OTHER">Autre</option>
             </select>
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-stone-600 mb-1">Quantité en stock</label>
+              <input type="number" min={1} value={aidForm.quantity || 1} onChange={(e) => setAidForm({ ...aidForm, quantity: parseInt(e.target.value, 10) || 1 })} className="w-full rounded-xl bg-stone-50 px-3 py-2 text-sm border border-stone-200 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-stone-600 mb-1">Dépôt</label>
+              <select value={aidForm.depositId || ''} onChange={(e) => setAidForm({ ...aidForm, depositId: e.target.value || undefined })} className="w-full rounded-xl bg-stone-50 px-3 py-2 text-sm border border-stone-200 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100">
+                <option value="">Automatique</option>
+                {deposits.map((dep) => <option key={dep.id} value={dep.id}>{dep.name}</option>)}
+              </select>
+            </div>
+          </div>
           <div><label className="block text-xs font-medium text-stone-600 mb-1">Description</label><textarea value={aidForm.description || ''} onChange={(e) => setAidForm({ ...aidForm, description: e.target.value })} rows={3} className="w-full rounded-xl bg-stone-50 px-3 py-2 text-sm border border-stone-200 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100" /></div>
           <button onClick={submitAid} className="w-full rounded-xl bg-brand-700 text-white py-2.5 text-sm font-semibold hover:bg-brand-800 transition-colors">{editingAid ? 'Enregistrer' : 'Créer'}</button>
         </div>
       </Modal>
 
-      <Modal open={distModal} onClose={() => setDistModal(false)} title="Nouvelle distribution">
+      <Modal open={distModal} onClose={() => setDistModal(false)} title="Attribuer à une famille">
         <div className="space-y-4">
           <div><label className="block text-xs font-medium text-stone-600 mb-1">Aide</label>
-            <select value={(distForm as any).aidId || ''} onChange={(e) => setDistForm({ ...distForm, aid: { id: e.target.value } as any })} className="w-full rounded-xl bg-stone-50 px-3 py-2 text-sm border border-stone-200 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100">
+            <select value={distForm.aidId || ''} onChange={(e) => setDistForm({ ...distForm, aidId: e.target.value })} className="w-full rounded-xl bg-stone-50 px-3 py-2 text-sm border border-stone-200 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100">
               <option value="">Choisir...</option>
-              {aids.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              {aids.map((a) => <option key={a.id} value={a.id}>{a.name}{a.quantity != null ? ` (${a.quantity} en stock)` : ''}</option>)}
             </select>
           </div>
-          <div><label className="block text-xs font-medium text-stone-600 mb-1">Quantité</label><input type="number" min={1} value={distForm.quantity || 1} onChange={(e) => setDistForm({ ...distForm, quantity: parseInt(e.target.value) })} className="w-full rounded-xl bg-stone-50 px-3 py-2 text-sm border border-stone-200 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100" /></div>
-          <button onClick={submitDist} className="w-full rounded-xl bg-emerald-700 text-white py-2.5 text-sm font-semibold hover:bg-emerald-800 transition-colors">Créer</button>
+          <div><label className="block text-xs font-medium text-stone-600 mb-1">Famille</label>
+            <select value={distForm.familyId || ''} onChange={(e) => setDistForm({ ...distForm, familyId: e.target.value })} className="w-full rounded-xl bg-stone-50 px-3 py-2 text-sm border border-stone-200 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100">
+              <option value="">Choisir...</option>
+              {families.map((f) => <option key={f.id} value={f.id}>Famille {f.lastName}</option>)}
+            </select>
+          </div>
+          <div><label className="block text-xs font-medium text-stone-600 mb-1">Quantité à attribuer</label><input type="number" min={1} value={distForm.quantity || 1} onChange={(e) => setDistForm({ ...distForm, quantity: parseInt(e.target.value, 10) || 1 })} className="w-full rounded-xl bg-stone-50 px-3 py-2 text-sm border border-stone-200 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100" /></div>
+          <button onClick={submitDist} className="w-full rounded-xl bg-emerald-700 text-white py-2.5 text-sm font-semibold hover:bg-emerald-800 transition-colors">Attribuer</button>
         </div>
       </Modal>
     </div>
@@ -596,7 +664,7 @@ function UsersTab() {
                 <td className="px-4 py-3">
                   <select value={u.role} onChange={(e) => changeRole(u.id, e.target.value)} className="rounded-lg bg-stone-50 text-xs font-medium text-stone-700 px-2 py-1 border border-stone-200 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100">
                     <option value="USER">User</option>
-                    <option value="WORKER">Worker</option>
+                    <option value="EMPLOYEE">Bénévole</option>
                     <option value="ADMIN">Admin</option>
                   </select>
                 </td>
@@ -624,9 +692,9 @@ export function AdminPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
       <div className="mb-8">
-        <span className="text-xs font-semibold tracking-widest uppercase text-brand-600">Administration</span>
-        <h1 className="mt-2 text-3xl md:text-4xl font-display font-bold text-stone-900">Espace Administration</h1>
-        <p className="mt-2 text-stone-500 text-sm">Gestion complète de l'association.</p>
+        <p className="eyebrow">Administration</p>
+        <h1 className="mt-2 text-3xl md:text-5xl font-display font-bold text-ink-900">Espace Administration</h1>
+        <p className="mt-2 text-ink-500 text-sm">Gestion complète de l'association.</p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">

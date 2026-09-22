@@ -17,13 +17,27 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
     ...options,
   });
   if (!response.ok) {
-    if (response.status === 401) {
+    const isAuthCall = url.startsWith('/auth/');
+    if (response.status === 401 && !isAuthCall) {
       localStorage.removeItem('omnia_token');
       localStorage.removeItem('omnia_user');
       window.location.href = '/login';
     }
-    const error = await response.text();
-    throw new Error(error || `HTTP ${response.status}`);
+    let message = `HTTP ${response.status}`;
+    try {
+      const body = await response.text();
+      try {
+        const parsed = JSON.parse(body) as { message?: string | string[] };
+        if (Array.isArray(parsed.message)) message = parsed.message.join(', ');
+        else if (parsed.message) message = parsed.message;
+        else if (body) message = body;
+      } catch {
+        if (body) message = body;
+      }
+    } catch {
+      /* keep default */
+    }
+    throw new Error(message);
   }
   return response.json() as Promise<T>;
 }
@@ -38,19 +52,45 @@ export const api = {
       `/family?search=${encodeURIComponent(search || '')}&page=${page || 1}&limit=${limit || 50}`
     ),
   getFamily: (id: string) => fetchJson<Family>(`/family/${id}`),
-  createFamily: (data: Partial<Family>) => fetchJson<Family>('/family', { method: 'POST', body: JSON.stringify(data) }),
+  createFamily: (data: Partial<Family>) =>
+    fetchJson<Family>('/family', {
+      method: 'POST',
+      body: JSON.stringify({
+        lastName: data.lastName,
+        address: data.address,
+        phone: data.phone,
+        numberOfMembers: data.numberOfMembers,
+        containsDisabledMember: data.containsDisabledMember,
+        containsElderlyMember: data.containsElderlyMember,
+        containspupilMember: data.containspupilMember,
+        notes: data.notes,
+      }),
+    }),
   updateFamily: (id: string, data: Partial<Family>) => fetchJson<Family>(`/family/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteFamily: (id: string) => fetchJson<void>(`/family/${id}`, { method: 'DELETE' }),
 
   // Aids
   getAids: () => fetchJson<Aid[]>('/aid'),
-  createAid: (data: Partial<Aid>) => fetchJson<Aid>('/aid', { method: 'POST', body: JSON.stringify(data) }),
-  updateAid: (id: string, data: Partial<Aid>) => fetchJson<Aid>(`/aid/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  createAid: (data: Partial<Aid> & { depositId?: string; quantity?: number }) =>
+    fetchJson<Aid>('/aid', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: data.name,
+        type: data.type || 'FOOD',
+        description: data.description,
+        quantity: data.quantity || 1,
+        depositId: data.depositId,
+      }),
+    }),
+  updateAid: (id: string, data: Partial<Aid> & { depositId?: string; quantity?: number }) =>
+    fetchJson<Aid>(`/aid/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteAid: (id: string) => fetchJson<void>(`/aid/${id}`, { method: 'DELETE' }),
 
-  // Aid Distributions
+  getDeposits: () => fetchJson<{ id: string; name: string; city?: string }[]>('/deposits'),
+
   getAidDistributions: () => fetchJson<AidDistribution[]>('/aid-distribution'),
-  createAidDistribution: (data: Partial<AidDistribution>) => fetchJson<AidDistribution>('/aid-distribution', { method: 'POST', body: JSON.stringify(data) }),
+  createAidDistribution: (data: { aidId: string; familyId?: string; quantity?: number; notes?: string }) =>
+    fetchJson<AidDistribution>('/aid-distribution', { method: 'POST', body: JSON.stringify(data) }),
   updateAidDistribution: (id: string, data: Partial<AidDistribution>) => fetchJson<AidDistribution>(`/aid-distribution/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteAidDistribution: (id: string) => fetchJson<void>(`/aid-distribution/${id}`, { method: 'DELETE' }),
 
@@ -93,11 +133,17 @@ export const api = {
     }),
 
   // Auth
-  login: (email: string, password: string) =>
-    fetchJson<{ access_token: string; user: User }>('/auth/login', {
+  login: async (email: string, password: string) => {
+    const res = await fetchJson<{ access_token?: string; accessToken?: string; user: User }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
-    }),
+    });
+    return {
+      ...res,
+      access_token: res.access_token || res.accessToken || '',
+      user: res.user,
+    };
+  },
 
   register: (name: string, email: string, password: string) =>
     fetchJson<{ access_token: string; user: User }>('/auth/register', {

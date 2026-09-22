@@ -43,12 +43,12 @@ export function ChatbotPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 flex flex-col h-[calc(100vh-8rem)]">
       <div className="mb-6 text-center">
-        <span className="text-xs font-semibold tracking-widest uppercase text-brand-600">Intelligence artificielle</span>
-        <h1 className="mt-2 text-3xl md:text-4xl font-display font-bold text-stone-900">Assistant Omnia</h1>
-        <p className="mt-2 text-stone-500 text-sm">Posez vos questions sur l'association, les dons et l'impact.</p>
+        <p className="eyebrow">Intelligence artificielle</p>
+        <h1 className="mt-2 text-3xl md:text-5xl font-display font-bold text-ink-900">Assistant Omnia</h1>
+        <p className="mt-2 text-ink-500 text-sm">Posez vos questions sur l'association, les dons et l'impact.</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto rounded-2xl bg-white border border-stone-100 p-4 space-y-4 shadow-sm">
+      <div className="flex-1 overflow-y-auto rounded-[1.8rem] surface-card p-4 space-y-4">
         {messages.map((msg, i) => (
           <motion.div
             key={i}

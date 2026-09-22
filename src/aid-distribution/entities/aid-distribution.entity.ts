@@ -3,6 +3,7 @@ import { FindOptionsSelect } from 'typeorm';
 import { Visit } from '../../visit/entities/visit.entity';
 import { Aid } from '../../aid/entities/aid.entity';
 import { Deposit } from '../../deposit/entities/deposit.entity';
+import { Family } from '../../family/entities/family.entity';
 @Entity()
 export class AidDistribution {
     @PrimaryGeneratedColumn('uuid')
@@ -21,12 +22,16 @@ export class AidDistribution {
     notes: string;
 
 
-    @ManyToOne(() => Visit, (visit) => visit.aidDistributions)
-    visit: Visit;
+    @ManyToOne(() => Visit, (visit) => visit.aidDistributions, { nullable: true })
+    visit: Visit | null;
 
 
     @ManyToOne(() => Aid, (aid) => aid.distributions)
     aid: Aid;
+
+    @ManyToOne(() => Family, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'familyId' })
+    family: Family | null;
 
     @ManyToOne(() => Deposit, (deposit) => deposit.distributions, { nullable: true })
     @JoinColumn({ name: 'sourceDepositId' })
@@ -46,10 +51,20 @@ export const AidDistributionSelectOptions: FindOptionsSelect<AidDistribution> = 
     notes: true,
     createdAt: true,
     deletedAt: true,
+    family: {
+        id: true,
+        lastName: true,
+        address: true,
+    },
+    aid: {
+        id: true,
+        name: true,
+        type: true,
+    },
     sourceDeposit: {
         id: true,
         name: true,
         city: true,
         region: true,
-    }
+    },
 };

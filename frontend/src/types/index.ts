@@ -55,6 +55,16 @@ export interface Aid {
   name: string;
   type: AidType;
   description?: string;
+  quantity?: number;
+  deposit?: { id: string; name?: string };
+}
+
+export interface Deposit {
+  id: string;
+  name: string;
+  city?: string;
+  capacity?: number;
+  currentQuantity?: number;
 }
 
 export interface AidDistribution {

@@ -5,7 +5,7 @@ import { UpdateFamilyDto } from './dto/update-family.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { User, UserRole } from 'src/user/entities/user.entity';
+import { UserRole } from 'src/user/entities/user.entity';
 import { UpsertFamilyNeedsDto } from './dto/upsert-family-needs.dto';
 
 @Controller('family')
@@ -18,6 +18,19 @@ export class FamilyController {
     return this.familyService.create(createFamilyDto);
   }
 
+  @Get()
+  @Roles([UserRole.ADMIN, UserRole.EMPLOYEE, UserRole.USER])
+  findAll(
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.familyService.findAll(
+      search,
+      page ? Number.parseInt(page, 10) : 1,
+      limit ? Number.parseInt(limit, 10) : 50,
+    );
+  }
 
   @Get('search/by-lastname')
   @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])

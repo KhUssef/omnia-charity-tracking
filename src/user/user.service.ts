@@ -113,6 +113,13 @@ export class UserService {
     return visit;
   }
 
+  async findAll() {
+    return this.userRepo.find({
+      select: ['id', 'name', 'email', 'role', 'phone', 'isActive', 'isEmailValidated', 'createdAt'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   async getCurrentUserProfile(userId: string) {
     const profile = await this.userRepo.findOne({
       where: { id: userId },

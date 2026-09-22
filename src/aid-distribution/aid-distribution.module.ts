@@ -7,11 +7,12 @@ import { Visit } from '../visit/entities/visit.entity';
 import { User } from '../user/entities/user.entity';
 import { Aid } from '../aid/entities/aid.entity';
 import { Deposit } from '../deposit/entities/deposit.entity';
+import { Family } from '../family/entities/family.entity';
 import { DashboardModule } from '../dashboard/dashboard.module';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([AidDistribution, Visit, User, Aid, Deposit]), DashboardModule],
+  imports: [TypeOrmModule.forFeature([AidDistribution, Visit, User, Aid, Deposit, Family]), DashboardModule],
   controllers: [AidDistributionController],
   providers: [AidDistributionService, RolesGuard],
 })

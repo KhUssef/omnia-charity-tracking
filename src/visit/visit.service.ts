@@ -74,7 +74,10 @@ export class VisitService {
   }
 
   async findAll() {
-    return this.visitRepo.find({ select: VisitSelectOptions });
+    return this.visitRepo.find({
+      relations: ['families', 'users', 'aidDistributions', 'aidDistributions.aid'],
+      order: { startDate: 'DESC' },
+    });
   }
 
   async findActive(limit?: number) {

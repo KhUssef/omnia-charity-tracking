@@ -2,16 +2,51 @@
 @import "leaflet/dist/leaflet.css";
 
 @theme {
-  --color-brand-50: #fffbeb;
-  --color-brand-100: #fef3c7;
-  --color-brand-200: #fde68a;
-  --color-brand-300: #fcd34d;
-  --color-brand-400: #fbbf24;
-  --color-brand-500: #f59e0b;
-  --color-brand-600: #d97706;
-  --color-brand-700: #b45309;
-  --color-brand-800: #92400e;
-  --color-brand-900: #78350f;
+  --color-navy-700: #2a466c;
+  --color-navy-800: #223a5e;
+  --color-navy-900: #1b2a4a;
+  --color-navy-950: #121c33;
+
+  --color-gold-300: #f7d56a;
+  --color-gold-400: #f5c242;
+  --color-gold-500: #e8a93a;
+  --color-gold-600: #c48d22;
+  --color-gold-700: #9a6e14;
+
+  --color-sky-50: #e8eefc;
+  --color-sky-100: #d6e2fa;
+  --color-sky-200: #c3d2f0;
+
+  --color-coral-400: #ff7a59;
+  --color-coral-500: #f06545;
+  --color-coral-600: #d45438;
+
+  --color-on-navy: #f7f4ec;
+  --color-on-navy-muted: #b7c3d9;
+
+  --color-brand-50: #e8eefc;
+  --color-brand-100: #d6e2fa;
+  --color-brand-200: #c3d2f0;
+  --color-brand-300: #7ab0ff;
+  --color-brand-400: #4b91ff;
+  --color-brand-500: #223a5e;
+  --color-brand-600: #1b2a4a;
+  --color-brand-700: #1b2a4a;
+  --color-brand-800: #164892;
+  --color-brand-900: #121c33;
+
+  --color-heart-50: #fff1ed;
+  --color-heart-100: #ffd8cc;
+  --color-heart-500: #ff7a59;
+  --color-heart-600: #d45438;
+  --color-heart-700: #862626;
+
+  --color-accent-50: #e8eefc;
+  --color-accent-100: #d6e2fa;
+  --color-accent-400: #f5c242;
+  --color-accent-500: #e8a93a;
+  --color-accent-600: #c48d22;
+  --color-accent-700: #9a6e14;
 
   --color-emerald-50: #ecfdf5;
   --color-emerald-100: #d1fae5;
@@ -19,11 +54,23 @@
   --color-emerald-600: #059669;
   --color-emerald-700: #047857;
 
-  --color-rose-50: #fff1f2;
-  --color-rose-100: #ffe4e6;
-  --color-rose-500: #f43f5e;
-  --color-rose-600: #e11d48;
+  --color-rose-50: #fff1ed;
+  --color-rose-100: #ffd8cc;
+  --color-rose-500: #ff7a59;
+  --color-rose-600: #d45438;
   --color-rose-700: #be123c;
+
+  --color-ink-50: #e8eefc;
+  --color-ink-100: #d6e2fa;
+  --color-ink-200: #c3d2f0;
+  --color-ink-300: #9aabc4;
+  --color-ink-400: #6b7f99;
+  --color-ink-500: #4b5d75;
+  --color-ink-600: #36455a;
+  --color-ink-700: #263348;
+  --color-ink-800: #1b2a4a;
+  --color-ink-900: #1b2a4a;
+  --color-ink-950: #121c33;
 
   --color-stone-50: #fafaf9;
   --color-stone-100: #f5f5f4;
@@ -36,9 +83,21 @@
   --color-stone-800: #292524;
   --color-stone-900: #1c1917;
 
+  --color-hero: #1b2a4a;
+  --color-hero-deep: #121c33;
+  --color-warning: #e8a93a;
+  --color-danger: #ff7a59;
+
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+:root {
+  --canvas: #e8eefc;
+  --glass: rgba(247, 244, 236, 0.12);
+  --shadow-soft: 0 12px 32px -20px rgba(18, 28, 51, 0.35);
+  --shadow-lift: 0 28px 60px -24px rgba(18, 28, 51, 0.45);
 }
 
 html {
@@ -49,76 +108,184 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background-color: #FFFBF7;
-  color: var(--color-stone-800);
+  background: var(--canvas);
+  color: var(--color-navy-900);
 }
 
-/* Headings */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--color-stone-900);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: inherit;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--color-stone-300);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-stone-400);
+.section-navy h1,
+.section-navy h2,
+.section-navy h3 {
+  color: #ffffff;
 }
 
-/* Animations */
-@keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes scale-in {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
-}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-navy-700); border-radius: 99px; }
 
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 
-.animate-fade-in-up {
-  animation: fade-in-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-fade-in {
-  animation: fade-in 0.5s ease-out forwards;
-}
-
-.animate-scale-in {
-  animation: scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Skeleton loader */
 .skeleton {
-  background: linear-gradient(90deg, #f5f5f4 25%, #e7e5e4 50%, #f5f5f4 75%);
+  background: linear-gradient(90deg, #d6e2fa 25%, #e8eefc 50%, #d6e2fa 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
 }
 
-/* Leaflet custom markers */
-.custom-div-icon {
+.section-navy {
+  background:
+    radial-gradient(900px 420px at 90% 0%, rgba(245, 194, 66, 0.14), transparent 55%),
+    radial-gradient(700px 380px at 0% 100%, rgba(255, 122, 89, 0.08), transparent 50%),
+    linear-gradient(165deg, #223a5e 0%, #1b2a4a 55%, #121c33 100%);
+  color: var(--color-on-navy);
+}
+
+.section-sky {
+  background: var(--color-sky-50);
+}
+
+.glass-panel {
+  background: rgba(247, 244, 236, 0.14);
+  border: 1px solid rgba(247, 244, 236, 0.22);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.45);
+}
+
+.surface-card {
+  background: #fff;
+  border: 1px solid rgba(27, 42, 74, 0.08);
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.surface-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lift);
+}
+
+.tile-blue { background: #e8eefc; }
+.tile-mint { background: #e8eefc; }
+.tile-sun { background: #f7e7b8; }
+.tile-pink { background: #ffe4dc; }
+.tile-lilac { background: #e8eefc; }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-gold-600);
+}
+
+.btn-primary,
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  background: var(--color-gold-400);
+  color: var(--color-navy-900);
+  font-weight: 700;
+  padding: 0.85rem 1.5rem;
+  box-shadow: 0 12px 24px -12px rgba(232, 169, 58, 0.85);
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover,
+.btn-gold:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px -12px rgba(232, 169, 58, 0.95);
+}
+
+.btn-outline-navy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-navy-800);
+  color: var(--color-navy-800);
+  font-weight: 600;
+  padding: 0.8rem 1.4rem;
   background: transparent;
-  border: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.btn-outline-navy:hover {
+  background: var(--color-navy-900);
+  color: var(--color-on-navy);
+}
+
+.btn-outline-white {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(247, 244, 236, 0.45);
+  color: var(--color-on-navy);
+  font-weight: 600;
+  padding: 0.8rem 1.4rem;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.btn-outline-white:hover {
+  background: rgba(247, 244, 236, 0.12);
+}
+
+.hero-wave {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 72px;
+}
+
+.custom-div-icon { background: transparent; border: none; }
+
+.leaflet-container {
+  background: #d6e2fa;
+  font-family: var(--font-sans);
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 16px;
+  box-shadow: var(--shadow-lift);
+}
+
+.omnia-marker {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1b2a4a;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  border: 2px solid white;
+  box-shadow: 0 8px 18px rgba(18, 26, 38, 0.2);
+  background: #f5c242;
+}
+
+.omnia-marker--worker {
+  width: 16px;
+  height: 16px;
+  background: #ff7a59;
+  box-shadow: 0 0 0 6px rgba(255, 122, 89, 0.25);
 }

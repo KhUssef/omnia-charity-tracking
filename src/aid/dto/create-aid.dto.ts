@@ -14,12 +14,14 @@ export class CreateAidDto {
 	@IsOptional()
 	description?: string;
 
+	@IsOptional()
 	@IsInt()
 	@IsPositive()
-	quantity: number;
+	quantity?: number;
 
+	@IsOptional()
 	@IsUUID()
-	depositId: string;
+	depositId?: string;
 
 	@IsOptional()
 	@IsBoolean()

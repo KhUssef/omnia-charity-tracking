@@ -21,6 +21,12 @@ export class UserController {
     return this.userService.createEmployee(createUserDto);
   }
 
+  @Get()
+  @Roles([UserRole.ADMIN])
+  findAll() {
+    return this.userService.findAll();
+  }
+
   // Get current authenticated user profile
   @UseGuards(JwtAuthGuard)
   @Roles([UserRole.ADMIN, UserRole.EMPLOYEE])
